@@ -8,6 +8,8 @@
 void	test_char_to_binary();
 void	test_atoi_base();
 
+void	run_test();
+
 FT_INLINE void test_passed(const char *func) {
 	ft_printf_fd(1, GREEN"All tests passed for "RESET""ORANGE"%s\n"RESET, func);
 }

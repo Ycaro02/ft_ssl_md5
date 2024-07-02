@@ -22,10 +22,9 @@ void test_atoi_base() {
 	test_passed(__func__);
 }
 
-void test_char_to_binary()
-{
+void test_char_to_binary() {
 	char *binary = char_to_binary('a');
-	
+
 	assert(ftlib_strcmp(binary, "01100001") == 0);
 	free(binary);
 	binary = char_to_binary('b');
@@ -37,3 +36,7 @@ void test_char_to_binary()
 	test_passed(__func__);
 }
 
+void run_test() {
+	test_char_to_binary();
+	test_atoi_base();
+}

@@ -13,9 +13,7 @@ char *char_to_binary(char c)
 	if (!binary) {
 		return (NULL);
 	}
-	
-	while (i >= 0)
-	{
+	while (i >= 0) {
 		binary[i] = c % 2 + '0';
 		c /= 2;
 		i--;

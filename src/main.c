@@ -2,7 +2,6 @@
 #include "../include/ssl_test.h"
 
 int main() {
-	test_char_to_binary();
-	test_atoi_base();
+	run_test();
 	return (0);
 }
