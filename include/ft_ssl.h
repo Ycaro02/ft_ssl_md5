@@ -28,6 +28,23 @@
 #define RC_BIN "10011000 10111010 11011100 11111110"
 #define RD_BIN "01110110 01010100 00110010 00010000"
 
+/**
+ * Function for iterate on byte block
+ *	F(X,Y,Z) = XY v not(X) Z
+ *	G(X,Y,Z) = XZ v Y not(Z)
+ *	H(X,Y,Z) = X xor Y xor Z
+ *	I(X,Y,Z) = Y xor (X v not(Z))
+ *	Implementation with bitwise operator:
+ *	F = (X & Y) | ((~X) & Z)
+ *	G = (X & Z) | (Y & (~Z))
+ *	H = X ^ Y ^ Z
+ *	I = Y ^ (X | (~Z))
+*/
+
+#define FUNCT_F(X, Y, Z)    ((X & Y) | ((~X) & Z))
+#define FUNCT_G(X, Y, Z)    ((X & Z) | (Y & (~Z)))
+#define FUNCT_H(X, Y, Z)    (X ^ Y ^ Z)
+#define FUNCT_I(X, Y, Z)    (Y ^ (X | (~Z)))
 
 /* binary_utils.c */
 char	*char_to_binary(char c);
