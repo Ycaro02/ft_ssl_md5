@@ -8,7 +8,9 @@ SRC_DIR 		=	src
 
 MAIN_MANDATORY 	=	main.c
 
-SRCS			=	test.c
+SRCS			=	test.c\
+					binary_utils.c\
+					atoi_base.c
 
 # SRCS_BONUS		=	main_bonus.c
 
