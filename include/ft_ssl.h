@@ -48,7 +48,7 @@
 
 /* binary_utils.c */
 char	*char_to_binary(char c);
-
+char	*string_to_binary(char *str);
 /* atoi_base.c */
 int		ft_atoi_base(char *str, char *base);
 
