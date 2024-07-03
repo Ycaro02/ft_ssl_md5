@@ -46,9 +46,18 @@
 #define FUNCT_H(X, Y, Z)    (X ^ Y ^ Z)
 #define FUNCT_I(X, Y, Z)    (Y ^ (X | (~Z)))
 
+/* Define MD5 block size */
+#define MD5_BLOCK_SIZE ((u32)512U)
+
+/* Define MD5 last block size, 512 - len on 64 - 1 cause we need at least one padding bits  */
+#define MD5_LAST_BLOCK_SIZE ((u32)(512U - 64U - 1U))
+
 /* binary_utils.c */
 char	*char_to_binary(char c);
+char	*u64_to_binary(u64 n);
 char	*string_to_binary(char *str);
+char	*build_binary_block(char *str, u64 base_len, s8 last_block);
+t_list	*string_to_binary_block_list(char *str);
 /* atoi_base.c */
 int		ft_atoi_base(char *str, char *base);
 

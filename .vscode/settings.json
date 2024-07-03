@@ -6,6 +6,8 @@
 		"libft.h": "c",
 		"array": "cpp",
 		"string": "cpp",
-		"string_view": "cpp"
+		"string_view": "cpp",
+		"ssl_test.h": "c",
+		"*.tcc": "c"
 	}
 }

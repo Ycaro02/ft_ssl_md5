@@ -36,6 +36,26 @@ void test_char_to_binary() {
 	test_passed(__func__);
 }
 
+void test_u64_to_binary() {
+    char *binary = u64_to_binary(1);
+    assert(ftlib_strcmp(binary, "0000000000000000000000000000000000000000000000000000000000000001") == 0);
+    free(binary);
+    
+    binary = u64_to_binary(2);
+    assert(ftlib_strcmp(binary, "0000000000000000000000000000000000000000000000000000000000000010") == 0);
+    free(binary);
+    
+    binary = u64_to_binary(1023);
+    assert(ftlib_strcmp(binary, "0000000000000000000000000000000000000000000000000000001111111111") == 0);
+    free(binary);
+    
+    binary = u64_to_binary(4294967295);
+    assert(ftlib_strcmp(binary, "0000000000000000000000000000000011111111111111111111111111111111") == 0);
+    free(binary);
+    
+    test_passed(__func__);
+}
+
 #include <stdio.h>
 
 /* rsc/sh/str2bin.sh convert $1 to bin, we need to get the output */
@@ -99,4 +119,5 @@ void run_test() {
 	test_char_to_binary();
 	test_atoi_base();
 	test_string_to_binary();
+	test_u64_to_binary();
 }
