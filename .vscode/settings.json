@@ -3,6 +3,9 @@
 		"*.def": "source.def",
 		"assert.h": "c",
 		"ft_ssl.h": "c",
-		"libft.h": "c"
+		"libft.h": "c",
+		"array": "cpp",
+		"string": "cpp",
+		"string_view": "cpp"
 	}
 }

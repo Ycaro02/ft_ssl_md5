@@ -7,10 +7,10 @@
 */
 char *char_to_binary(char c)
 {
-	char	*binary = malloc(8 + 1);
-	int		i = 7;
+	char	*binary = NULL;
+	s32		i = 7;
 
-	if (!binary) {
+	if (!(binary = malloc(8 + 1))) {
 		return (NULL);
 	}
 	binary[8] = '\0';
@@ -22,23 +22,30 @@ char *char_to_binary(char c)
 	return (binary);
 }
 
+/**
+ * @brief Convert a string to a binary string
+ * @param str string to convert
+ * @return allocated char * str converted to binary
+*/
 char *string_to_binary(char *str) {
-	char	*binary = malloc(8 * ft_strlen(str) + 1);
-	int		i = 0;
-	int		j = 0;
+	char	*binary = NULL;
+	s32		i = 0, j = 0;
 
-	if (!binary) {
+	if (!(binary = malloc(8 * ft_strlen(str) + 1))) {
+		ft_printf_fd(2, "Error: string_to_binary: malloc failed\n");
 		return (NULL);
 	}
 	while (str[i]) {
 		char *tmp = char_to_binary(str[i]);
 		if (!tmp) {
+			ft_printf_fd(2, "Error: string_to_binary: malloc failed\n");
 			free(binary);
 			return (NULL);
-		}
-		// ft_strcpy(binary + j, tmp);
-		if (ft_strlen(tmp) != 8) {
+		} else if (ft_strlen(tmp) != 8) {
 			ft_printf_fd(2, "Error: string_to_binary: tmp is not 8 bytes long, |%s| len: %d\n", tmp, ft_strlen(tmp));
+			free(binary);
+			free(tmp);
+			return (NULL);
 		}
 		ftlib_strcpy(binary + j, tmp, 8);
 		j += 8;
