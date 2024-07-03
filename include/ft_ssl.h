@@ -60,8 +60,11 @@
 
 #define M_DATA_SIZE		16
 
+#define INT_BITS_SIZE	32
+
 typedef struct s_md5_context {
 	char	*input;				/* Input string */
+	char	*binary_input;		/* Input string in binary */
 	t_list	*block_list;		/* List of binary block str */
 	
 	/*	
@@ -71,6 +74,7 @@ typedef struct s_md5_context {
 	u32		**splited_block;	/* Splited block */
 	u32		list_size;			/* Size of block list */
 	u32		input_size;			/* Size of input string */
+	u32		binary_input_size;	/* Size of input string in binary */
 	u32		A;					/* Buffer A */
 	u32		B;					/* Buffer B */
 	u32		C;					/* Buffer C */
@@ -83,6 +87,7 @@ char	*u64_to_binary(u64 n);
 char	*string_to_binary(char *str);
 char	*build_binary_block(char *str, u64 base_len, s8 last_block);
 t_list	*string_to_binary_block_list(char *str);
+void	md5_process(char *input);
 /* atoi_base.c */
 int		ft_atoi_base(char *str, char *base);
 

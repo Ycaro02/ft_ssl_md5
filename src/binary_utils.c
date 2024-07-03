@@ -191,3 +191,72 @@ t_list *string_to_binary_block_list(char *str) {
 	}
 	return (binary_list);
 }
+
+
+u32 binary_string_to_u32(char *binary, u32 size) {
+	u32 i = 0;
+	u32 res = 0;
+
+	while (i < size) {
+		res = res * 2 + (binary[i] - '0');
+		i++;
+	}
+	return (res);
+}
+
+void split_block(char *block, u32 **splited_block, u32 block_idx) {
+	u32 i = 0;
+	u32 j = 0;
+
+	while (j < 16) {
+		splited_block[block_idx][j] = binary_string_to_u32(block + i, 32);
+		i += 32;
+		j++;
+	}
+
+	ft_printf_fd(1, "Splited block:\n");
+	for (u32 i = 0; i < 16; i++) {
+		ft_printf_fd(1, "Data %d M%d: 0x%X -> %u\n", block_idx, i, splited_block[block_idx][i], splited_block[block_idx][i]);
+	}
+}
+
+void md5_init(MD5_Context *c, char *input) {
+	u32 i = 0;
+
+	c->input = input;
+	c->binary_input = string_to_binary(input);
+	c->block_list = string_to_binary_block_list(c->binary_input);
+	
+	c->input_size = ft_strlen(input);
+	c->binary_input_size = c->input_size * 8;
+	c->list_size = ft_lstsize(c->block_list);
+	c->splited_block = malloc(sizeof(u32 *) * c->list_size);
+
+	while (i < M_DATA_SIZE) {
+		c->splited_block[i] = malloc(sizeof(u32) * 16);
+		i++;
+	}
+
+	c->A = RA_HEX;
+	c->B = RB_HEX;
+	c->C = RC_HEX;
+	c->D = RD_HEX;
+}
+
+void md5_process(char *input) {
+	MD5_Context c = {0};
+	t_list		*current = NULL;
+	u32			i = 0;
+
+	md5_init(&c, input);
+	ft_printf_fd(1, CYAN"Input: %s\nInput Bin %s\n", input, c.binary_input);
+	ft_printf_fd(1, "Input size: %u --> %u == 0x%x\n", c.input_size, c.binary_input_size, c.binary_input_size);
+	ft_printf_fd(1, "List size: %u\n"RESET, c.list_size);
+	ft_printf_fd(1, ORANGE"Block content:\n"RESET"%s\n", c.block_list->content);
+	current = c.block_list;
+	while (i < c.list_size) {
+		split_block(current->content, c.splited_block, i);
+		i++;
+		current = current->next;
+	}
+}
