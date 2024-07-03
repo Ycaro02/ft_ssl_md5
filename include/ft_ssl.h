@@ -18,10 +18,10 @@
 #define COMPUTED_RC_HEX ((0x98 << 24) + (0xba << 16) + (0xdc << 8) + 0xfe)
 #define COMPUTED_RD_HEX ((0x10 << 24) + (0x32 << 16) + (0x54 << 8) + 0x76)
 
-#define RA_HEX 0x67452301
-#define RB_HEX 0xefcdab89
-#define RC_HEX 0x98badcfe
-#define RD_HEX 0x10325476
+#define RA_HEX (0x67452301)
+#define RB_HEX (0xefcdab89)
+#define RC_HEX (0x98badcfe)
+#define RD_HEX (0x10325476)
 
 #define RA_BIN "01100111 01000101 00100011 00000001"
 #define RB_BIN "11101111 11001101 10101011 10001001"
@@ -51,6 +51,31 @@
 
 /* Define MD5 last block size, 512 - len on 64 - 1 cause we need at least one padding bits  */
 #define MD5_LAST_BLOCK_SIZE ((u32)(512U - 64U - 1U))
+
+/* Define order we use M data for each round */
+#define FIRST_ROUND_ORDER	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+#define SECOND_ROUND_ORDER	{ 1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12 }
+#define THIRD_ROUND_ORDER	{ 5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2 }
+#define FOURTH_ROUND_ORDER	{ 0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9 }
+
+#define M_DATA_SIZE		16
+
+typedef struct s_md5_context {
+	char	*input;				/* Input string */
+	t_list	*block_list;		/* List of binary block str */
+	
+	/*	
+		Splited block, (M data) of 16 uint (512 / 16 == 16 4 bytes word) for each block
+		first idx is block idx and second is splited data 
+	*/
+	u32		**splited_block;	/* Splited block */
+	u32		list_size;			/* Size of block list */
+	u32		input_size;			/* Size of input string */
+	u32		A;					/* Buffer A */
+	u32		B;					/* Buffer B */
+	u32		C;					/* Buffer C */
+	u32		D;					/* Buffer D */
+} MD5_Context;
 
 /* binary_utils.c */
 char	*char_to_binary(char c);
