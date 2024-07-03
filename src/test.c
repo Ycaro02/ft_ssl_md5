@@ -61,10 +61,13 @@ void test_u64_to_binary() {
 /* rsc/sh/str2bin.sh convert $1 to bin, we need to get the output */
 char *bash_convert_str(char *str) {
     char	*baseCmd = "bash rsc/sh/str2bin.sh \"%s\"";
-    char	cmd[4096];
+    // char	cmd[4096];
+    char	*cmd = NULL;
 	
+	u64 total_cmd_len = ((ft_strlen(baseCmd)) + ft_strlen(str) + 1);
+	cmd = malloc(total_cmd_len * sizeof(char));
 	/* Build cmd */
-	ft_bzero(cmd, 4096);
+	ft_bzero(cmd, total_cmd_len);
 	sprintf(cmd, baseCmd, str);
 
 	/* Open a pipe to the command */
@@ -75,19 +78,21 @@ char *bash_convert_str(char *str) {
     }
 
 	/* Read output */
-    char *output = malloc(4096);
+	u32 output_len = ft_strlen(str) * 8 + 1;
+    char *output = malloc(output_len + 1);
     if (!output) {
 		ft_printf_fd(2, "Error: bash_convert_str: malloc failed\n");
         pclose(fp);
         return (NULL);
     }
-    fgets(output, 4096, fp);
+    fgets(output, output_len, fp);
 
     /* clear */
     pclose(fp);
 
 	// ft_printf_fd(1, "cmd: %s\n", cmd);
     // ft_printf_fd(1, "out: %s\n", output);
+	free(cmd);
 
     return (output);
 }
@@ -164,22 +169,22 @@ void check_binary_blocks(char *input_str, int expected_block_count) {
         char *block_content = (char *)current->content;
         int block_len = ft_strlen(block_content);
 
-        // Verify block length
+        /* Verify block length */
 		assert(block_len == MD5_BLOCK_SIZE);
 
-        // Verify block content and padding
+        /* Verify block content and padding */
         for (int j = 0; j < block_len; j++) {
             if (input_index < base_len) {
-                // Verify actual data from input string
+                /* Verify actual data from input string */
 				assert(input_str[input_index] == block_content[j]);
                 input_index++;
             } else {
-				// Verify lenght store in the last block
+				/* Verify lenght store in the last block */
 				if ((block_str_idx == block_count - 1) && (j == block_len - 64 - 1)) {
 					verify_length(block_content, block_len, base_len);
 					break ;
 				}
-				// Verify padding
+				/* Verify padding */
 				if (is_padding_1) {
 					assert(block_content[j] == '1');
 					is_padding_1 = FALSE;
