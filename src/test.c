@@ -115,9 +115,123 @@ void test_string_to_binary() {
 	test_passed(__func__);
 }
 
+
+
+
+
+
+#define STRING1024	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOZLZ"
+#define STRING1023	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALAaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOZLZ"
+#define STRING513	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALA"
+#define STRING512	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALA"
+#define STRING511	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALA"
+#define STRING500	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccdddddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALA"
+#define STRING448	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALA"
+#define STRING447	"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbddddddddddddddddddddddddddddddddeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeefffffffffffffffffffffffffffgggggggggggggggggggggggggggggggggggggghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiijjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnOALA"
+
+/**
+ * @brief Verify length store in the last block
+ * @param block_content block content
+ * @param block_len block length
+ * @param base_len base length
+*/
+void verify_length(char *block_content, u64 block_len, u64 base_len) {
+	char *length_binary = u64_to_binary(base_len); // Convert length to binary
+	assert(ft_strncmp(block_content + block_len - 64, length_binary, 64) == 0);
+	// ft_printf_fd(1, PINK"Length binary: %s == ", length_binary);
+	// ft_printf_fd(1, "Block content len : %s\n"RESET, block_content + block_len - 64);
+	free(length_binary);
+}
+
+/**
+ * @brief Check binary blocks integrity
+ * @param input_str input string
+ * @param expected_block_count expected block count
+*/
+void check_binary_blocks(char *input_str, int expected_block_count) {
+    t_list *binary_list = string_to_binary_block_list(input_str);
+    int block_count = ft_lstsize(binary_list);
+    assert(block_count == expected_block_count);
+
+    t_list *current = binary_list;
+    u64 base_len = ft_strlen(input_str);
+    u64 input_index = 0;
+    int block_str_idx = 0;
+
+	s8 is_padding_1 = TRUE;
+
+    for (int i = 0; i < block_count; i++) {
+        char *block_content = (char *)current->content;
+        int block_len = ft_strlen(block_content);
+
+        // Verify block length
+		assert(block_len == MD5_BLOCK_SIZE);
+
+        // Verify block content and padding
+        for (int j = 0; j < block_len; j++) {
+            if (input_index < base_len) {
+                // Verify actual data from input string
+				assert(input_str[input_index] == block_content[j]);
+                input_index++;
+            } else {
+				// Verify lenght store in the last block
+				if ((block_str_idx == block_count - 1) && (j == block_len - 64 - 1)) {
+					verify_length(block_content, block_len, base_len);
+					break ;
+				}
+				// Verify padding
+				if (is_padding_1) {
+					assert(block_content[j] == '1');
+					is_padding_1 = FALSE;
+				} else {
+					assert(block_content[j] == '0');
+				}
+			}
+        }
+
+        block_str_idx++;
+        current = current->next;
+    }
+	free(input_str);
+    ft_lstclear(&binary_list, free);
+}
+
+void test_string_to_binary_block_list() {
+	// check_binary_blocks(ft_strdup(""), 1);
+	check_binary_blocks(ft_strdup("a"), 1);
+	check_binary_blocks(ft_strdup(STRING447), 1);
+	check_binary_blocks(ft_strdup(STRING448), 2);
+	check_binary_blocks(ft_strdup(STRING500), 2);
+	check_binary_blocks(ft_strdup(STRING511), 2);
+	check_binary_blocks(ft_strdup(STRING512), 2);
+	check_binary_blocks(ft_strdup(STRING513), 2);
+	check_binary_blocks(ft_strdup(STRING1023), 3);
+	check_binary_blocks(ft_strdup(STRING1024), 3);
+	test_passed(__func__);
+}
+
 void run_test() {
 	test_char_to_binary();
 	test_atoi_base();
 	test_string_to_binary();
 	test_u64_to_binary();
+	test_string_to_binary_block_list();
 }
+
+
+
+// human test
+// void test_string_to_block(char *str) {
+// 	char *allocated_str = ft_strdup(str);
+// 	t_list *lst = string_to_binary_block_list(allocated_str);
+// 	t_list *tmp = lst;
+// 	ft_printf_fd(1, RED"Test string len: %u -> "RESET, ft_strlen(str));
+// 	ft_printf_fd(1, PINK"List size: %d\n"RESET""YELLOW"Data:\n"RESET, ft_lstsize(lst));
+// 	while (tmp) {
+// 		char *tmp_str = (char *)tmp->content;
+// 		ft_printf_fd(1, "%s -> len %u\n", tmp_str, ft_strlen(tmp_str));
+// 		tmp = tmp->next;
+// 	}
+// 	free(allocated_str);
+// 	ft_lstclear(&lst, &free);
+// }

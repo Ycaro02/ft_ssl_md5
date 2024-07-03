@@ -68,7 +68,7 @@ test: $(NAME)
 # @ulimit -c unlimited
 leak thread debug: clean $(NAME)
 	@printf	"$(CYAN)CFLAGS: $(CFLAGS)$(RESET)\n"
-	@./$(NAME)
+# @./$(NAME)
 
 re: clean $(NAME)
 
