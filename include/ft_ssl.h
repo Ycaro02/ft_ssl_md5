@@ -21,10 +21,10 @@
  */
 
 
-#define RA_HEX (0x67452301U)
-#define RB_HEX (0xefcdab89U)
-#define RC_HEX (0x98badcfeU)
-#define RD_HEX (0x10325476U)
+#define RA_HEX (0x67452301)
+#define RB_HEX (0xefcdab89)
+#define RC_HEX (0x98badcfe)
+#define RD_HEX (0x10325476)
 
 /**
  * Function for iterate on byte block

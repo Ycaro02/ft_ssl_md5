@@ -216,15 +216,28 @@ void split_block_into_word(char *block, u32 **splited_block, u32 block_idx) {
 	u32 j = 0;
 
 	while (j < 16) {
-		splited_block[block_idx][j] = binary_string_to_u32(block + i, 32);
+		splited_block[block_idx][j] = SWAP_BYTE_32(binary_string_to_u32(block + i, 32));
 		i += 32;
 		j++;
+		// if (j == 16) {
+		// 	u32 tmp = splited_block[block_idx][15];
+		// 	splited_block[block_idx][15] = splited_block[block_idx][14];
+		// 	splited_block[block_idx][14] = tmp;
+		// }
 	}
+
 
 	ft_printf_fd(1, "Splited block:\n");
 	for (u32 i = 0; i < 16; i++) {
 		ft_printf_fd(1, "Data %d M%d: 0x%X -> %u\n", block_idx, i, splited_block[block_idx][i], splited_block[block_idx][i]);
 	}
+}
+
+#include <stdio.h>
+
+void display_hash(MD5_Context *c) {
+	printf("Brut display %08x%08x%08x%08x\n", c->A, c->B, c->C, c->D);
+	printf("Swap endian  %08x%08x%08x%08x\n", SWAP_BYTE_32(c->A), SWAP_BYTE_32(c->B), SWAP_BYTE_32(c->C), SWAP_BYTE_32(c->D));
 }
 
 #include <math.h>
@@ -237,7 +250,7 @@ void compute_K_constant(u32 K[64]) {
 	s32 i = 0;
 
 	while (i < 64) {
-		K[i] = (u32)(fabs(sin(i + 1)) * (1UL << 32U));
+		K[i] = floor(fabs(sin(i + 1)) * (1UL << 32U));
 		i++;
 	}
 }
@@ -270,9 +283,9 @@ void MD5_init(MD5_Context *c, char *input) {
 	c->D = RD_HEX;
 
 	compute_K_constant(c->K);
-	// for (u32 i = 0; i < 64; i++) {
-	// 	ft_printf_fd(1, "K[%d]: 0x%X\n", i, c->K[i]);
-	// }
+	for (u32 i = 0; i < 64; i++) {
+		ft_printf_fd(1, "K[%d]: 0x%X\n", i + 1, c->K[i]);
+	}
 }
 
 void MD5_context_free(MD5_Context *c) {
@@ -319,7 +332,7 @@ u32 left_rotate(u32 x, u32 c) {
 #define ROTATE_LEFT(val, shift)	(((val << shift) | (val >> (32 - shift))))
 
 u32	func_f(u32 B, u32 C, u32 D) { return ((B & C) | ((~B) & D)); }
-u32	func_g(u32 B, u32 C, u32 D) { return ((B & D) | (C & (~D))); }
+u32	func_g(u32 B, u32 C, u32 D) { return ((D & B) | ((~D) & C)); }
 u32	func_h(u32 B, u32 C, u32 D) { return (B ^ C ^ D); }
 u32	func_i(u32 B, u32 C, u32 D) { return (C ^ (B | (~D))); }
 
@@ -332,21 +345,10 @@ u32	func_i(u32 B, u32 C, u32 D) { return (C ^ (B | (~D))); }
 // 	return (left_rotate(compute, S[n % 4]));
 // }
 
-
-void MD5_block_compute(MD5_Context *c, u32 block_idx) {
-	int i = 0;
+void MD5_block_compute(MD5_Context *con, u32 block_idx) {
 	u32 tmp, compute;
-	// static s32 select_m[64] = M_SELECTION_ORDER;
-    static s32 select_m[] = {
-        // Round 1
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-        // Round 2
-        1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12,
-        // Round 3
-        5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2,
-        // Round 4
-        0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9
-    };
+
+	s32 g = 0;
 
 	static s32 shift_val[] = {
 		7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
@@ -355,48 +357,79 @@ void MD5_block_compute(MD5_Context *c, u32 block_idx) {
 		6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
 	};
 
-	// static s32 MD5_SHIFT1[4] = { 7, 12, 17, 22 };
-	// static s32 MD5_SHIFT2[4] = { 5, 9, 14, 20 };
-	// static s32 MD5_SHIFT3[4] = { 4, 11, 16, 23 };
-	// static s32 MD5_SHIFT4[4] = { 6, 10, 15, 21 };
+	static const u32 k[] = {
+		0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
+		0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
+		0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
+		0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+		0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa,
+		0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
+		0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed,
+		0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+		0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c,
+		0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70,
+		0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05,
+		0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+		0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039,
+		0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1,
+		0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
+		0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
+	};
 
 	(void)block_idx;
-	u32 *M = c->splited_block[0];
+	u32 *M = con->splited_block[0];
 
-	while (i < 64) {
+	u32 a,b,c,d;
+
+	a = con->A;
+	b = con->B;
+	c = con->C;
+	d = con->D;
+
+	printf("a=%x, b=%x, c=%x, d=%x\n", a,b,c,d);
+
+	for (s32 i = 0; i < 64; i++) {
 		if (i < 16) {
-			compute = func_f(c->B, c->C, c->D);
-			// compute = MD5_rounds_compute(c, MD5_SHIFT1, c->splited_block[block_idx], func_f, i, select_m[i]);
+			compute = func_f(b, c, d);
+			g = i;
+			// compute = MD5_rounds_compute(c, MD5_SHIFT1, con->splited_block[block_idx], func_f, i, select_m[i]);
 		} else if (i < 32) {
-			compute = func_g(c->B, c->C, c->D);
-			// compute = MD5_rounds_compute(c, MD5_SHIFT2, c->splited_block[block_idx], func_g, i, select_m[i]);
+			compute = func_g(b, c, d);
+			g = (5*i + 1) % 16; 
+			// compute = MD5_rounds_compute(c, MD5_SHIFT2, con->splited_block[block_idx], func_g, i, select_m[i]);
 		} else if (i < 48) {
-			compute = func_h(c->B, c->C, c->D);
-			// compute = MD5_rounds_compute(c, MD5_SHIFT3, c->splited_block[block_idx], func_h, i, select_m[i]);
+			compute = func_h(b, c, d);
+			g = (3*i + 5) % 16;
+			// compute = MD5_rounds_compute(c, MD5_SHIFT3, con->splited_block[block_idx], func_h, i, select_m[i]);
 		} else {
-			compute = func_i(c->B, c->C, c->D);
-			// compute = MD5_rounds_compute(c, MD5_SHIFT4, c->splited_block[block_idx], func_i, i, select_m[i]);
+			compute = func_i(b, c, d);
+			g = (7*i) % 16;
+			// compute = MD5_rounds_compute(c, MD5_SHIFT4, con->splited_block[block_idx], func_i, i, select_m[i]);
 		}
-		tmp = c->D;
-		c->D = c->C;
-		c->C = c->B;
-		// c->B = (c->B + compute) % (1UL << 32);
-		c->B = c->B + ROTATE_LEFT((c->A + compute + c->K[i] + M[select_m[i]]), shift_val[i]);
-		c->A = tmp;
-		i++;
+		tmp = d;
+		d = c;
+		c = b;
+		b = b + ROTATE_LEFT((a + compute + k[i] + M[g]), shift_val[i]);
+		a = tmp;
+		if (i < 17)
+			printf("%d: a=%x, b=%x, c=%x, d=%x\n",i,a,b,c,d);
 	}
-	c->A = (c->A + RA_HEX) % (1UL << 32);
-	c->B = (c->B + RB_HEX) % (1UL << 32);
-	c->C = (c->C + RC_HEX) % (1UL << 32);
-	c->D = (c->D + RD_HEX) % (1UL << 32);
+	display_hash(con);
+	con->A += a;
+	con->B += b;
+	con->C += c;
+	con->D += d;
+
+	// c->A = (c->A + RA_HEX) % (1UL << 32);
+	// c->B = (c->B + RB_HEX) % (1UL << 32);
+	// c->C = (c->C + RC_HEX) % (1UL << 32);
+	// c->D = (c->D + RD_HEX) % (1UL << 32);
+	display_hash(con);
+
+
 }
 
-#include <stdio.h>
 
-void display_hash(MD5_Context *c) {
-	printf("Brut display %08x%08x%08x%08x\n", c->A, c->B, c->C, c->D);
-	printf("Swap endian  %08x%08x%08x%08x\n", SWAP_BYTE_32(c->A), SWAP_BYTE_32(c->B), SWAP_BYTE_32(c->C), SWAP_BYTE_32(c->D));
-}
 
 /**
  * @brief Process the MD5 algorithm
@@ -424,7 +457,7 @@ void MD5_process(char *input) {
 
 	MD5_block_compute(&c, 0);
 
-	display_hash(&c);
+	// display_hash(&c);
 
 	MD5_context_free(&c);
 }
