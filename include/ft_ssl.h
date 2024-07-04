@@ -3,6 +3,8 @@
 
 #include "../libft/libft.h"
 
+
+
 /** 
  * From RFC 1321 - The MD5 Message-Digest Algorithm: https://www.ietf.org/rfc/rfc1321.txt
  * Register first state:
@@ -13,10 +15,10 @@
  *		word D: 76 54 32 10
  */
 
-#define COMPUTED_RA_HEX ((0x67 << 24) + (0x45 << 16) + (0x23 << 8) + 0x01)
-#define COMPUTED_RB_HEX ((0xef << 24) + (0xcd << 16) + (0xab << 8) + 0x89)
-#define COMPUTED_RC_HEX ((0x98 << 24) + (0xba << 16) + (0xdc << 8) + 0xfe)
-#define COMPUTED_RD_HEX ((0x10 << 24) + (0x32 << 16) + (0x54 << 8) + 0x76)
+#define COMPUTED_RA_HEX ((0x67U << 24) + (0x45U << 16) + (0x23U << 8) + 0x01U)
+#define COMPUTED_RB_HEX ((0xefU << 24) + (0xcdU << 16) + (0xabU << 8) + 0x89U)
+#define COMPUTED_RC_HEX ((0x98U << 24) + (0xbaU << 16) + (0xdcU << 8) + 0xfeU)
+#define COMPUTED_RD_HEX ((0x10U << 24) + (0x32U << 16) + (0x54U << 8) + 0x76U)
 
 #define RA_HEX (0x67452301)
 #define RB_HEX (0xefcdab89)
@@ -79,13 +81,14 @@ typedef struct s_md5_context {
 	u32		B;					/* Buffer B */
 	u32		C;					/* Buffer C */
 	u32		D;					/* Buffer D */
+	u32		K[64];				/* K constant */
 } MD5_Context;
 
 /* binary_utils.c */
 char	*char_to_binary(char c);
 char	*u64_to_binary(u64 n);
 char	*string_to_binary(char *str);
-char	*build_binary_block(char *str, u64 base_len, s8 last_block);
+// char	*build_binary_block(char *str, u64 base_len, s8 last_block);
 t_list	*string_to_binary_block_list(char *str);
 void	md5_process(char *input);
 /* atoi_base.c */

@@ -81,7 +81,7 @@ char *string_to_binary(char *str) {
  * @return allocated char *str with padding if needed
 */
 
-char *build_binary_block(char *input_string, u64 base_len, s8 last_block) {
+char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 need_padding_1) {
 	
 	u32		block_size = last_block == 1 ? MD5_LAST_BLOCK_SIZE : MD5_BLOCK_SIZE; 
 	u64		mod = ft_strlen(input_string) % block_size;
@@ -100,7 +100,9 @@ char *build_binary_block(char *input_string, u64 base_len, s8 last_block) {
 		}
 		ft_memset(padding, '0', to_add);
 		padding[to_add] = '\0';
-		padding[0] = '1';
+		if (need_padding_1) {
+			padding[0] = '1';
+		}
 		block_str = ft_strjoin_free(input_string, padding, 's');
 	} else {
 		block_str = ft_strdup(input_string);
@@ -176,10 +178,10 @@ t_list *string_to_binary_block_list(char *str) {
 		/* If we are the last block and we need special padding (next is last == true) */
 		if (is_last_block && next_is_last) {
 			padding = get_full_pad_block(need_padding_1);
-			binary_str = build_binary_block(padding, base_len, is_last_block);
+			binary_str = build_binary_block(padding, base_len, is_last_block, FALSE);
 			free(padding);
 		} else { /* Classic build */
-			binary_str = build_binary_block(str + i, base_len, is_last_block);
+			binary_str = build_binary_block(str + i, base_len, is_last_block, TRUE);
 			if (trunc_needed) {
 				str[i + MD5_BLOCK_SIZE] = save_char;
 			}
@@ -220,6 +222,17 @@ void split_block(char *block, u32 **splited_block, u32 block_idx) {
 	}
 }
 
+#include <math.h>
+
+void compute_K_constant(u32 K[64]) {
+	s32 i = 0;
+
+	while (i < 64) {
+		K[i] = (u32)(fabs(sin(i + 1)) * (1UL << 32U));
+		i++;
+	}
+}
+
 void md5_init(MD5_Context *c, char *input) {
 	u32 i = 0;
 
@@ -241,6 +254,10 @@ void md5_init(MD5_Context *c, char *input) {
 	c->B = RB_HEX;
 	c->C = RC_HEX;
 	c->D = RD_HEX;
+	compute_K_constant(c->K);
+	// for (u32 i = 0; i < 64; i++) {
+	// 	ft_printf_fd(1, "K[%d]: 0x%X\n", i, c->K[i]);
+	// }
 }
 
 void md5_process(char *input) {
@@ -252,9 +269,9 @@ void md5_process(char *input) {
 	ft_printf_fd(1, CYAN"Input: %s\nInput Bin %s\n", input, c.binary_input);
 	ft_printf_fd(1, "Input size: %u --> %u == 0x%x\n", c.input_size, c.binary_input_size, c.binary_input_size);
 	ft_printf_fd(1, "List size: %u\n"RESET, c.list_size);
-	ft_printf_fd(1, ORANGE"Block content:\n"RESET"%s\n", c.block_list->content);
 	current = c.block_list;
 	while (i < c.list_size) {
+		ft_printf_fd(1, ORANGE"Block content:\n"RESET"%s\n", current->content);
 		split_block(current->content, c.splited_block, i);
 		i++;
 		current = current->next;

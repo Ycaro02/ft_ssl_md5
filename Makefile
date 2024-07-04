@@ -4,6 +4,7 @@ include rsc/mk/source.mk
 NAME			=	ft_ssl
 CC				=	clang
 
+
 # ASCII_ART		=	./rsc/sh/vox_ascii.sh
 
 all:		$(NAME)
@@ -12,7 +13,7 @@ $(NAME): $(LIBFT) $(LIST) $(OBJ_DIR) $(OBJS)
 	@$(MAKE_LIBFT)
 	@$(MAKE_LIST)
 	@printf "$(CYAN)Compiling ${NAME} ...$(RESET)\n"
-	@$(CC) $(CFLAGS) $(FREETYPE_INC) -o $(NAME) $(OBJS) $(PERLIN_LIB) $(LIBFT) $(LIST) $(LIB_DEPS_DIR) $(OPENGL_LIB) $(FREETYPE_LIB) 
+	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBFT) $(LIST) -lm
 	@printf "$(GREEN)Compiling $(NAME) done$(RESET)\n"
 
 
@@ -36,7 +37,7 @@ $(OBJ_DIR):
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@printf "$(YELLOW)Compile $<$(RESET) $(BRIGHT_BLACK)-->$(RESET) $(BRIGHT_MAGENTA)$@$(RESET)\n"
-	@$(CC) $(CFLAGS) $(FREETYPE_INC) -o $@ -c $< $(CFLAGS)
+	@$(CC) $(CFLAGS) -o $@ -c $<
 
 bonus: clear_mandatory ${NAME}
 

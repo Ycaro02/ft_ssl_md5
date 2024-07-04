@@ -10,7 +10,7 @@
 #define B_ENDIAN 1
 
 /**
- *  @brief Simple detect endian function: https://www.embeddedsoft.	net/simple-code-to-find-endianness-in-c
+ *  @brief Simple detect endian function: https://www.embeddedsoft.net/simple-code-to-find-endianness-in-c
  *	@return (L_ENDIAN, or B_ENDIAN)
 */
 FT_INLINE int detect_local_endian()
