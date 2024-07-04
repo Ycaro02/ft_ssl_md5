@@ -14,22 +14,17 @@
  *		word B: 89 ab cd ef
  *		word C: fe dc ba 98
  *		word D: 76 54 32 10
- */
-
 #define COMPUTED_RA_HEX ((0x67U << 24) + (0x45U << 16) + (0x23U << 8) + 0x01U)
 #define COMPUTED_RB_HEX ((0xefU << 24) + (0xcdU << 16) + (0xabU << 8) + 0x89U)
 #define COMPUTED_RC_HEX ((0x98U << 24) + (0xbaU << 16) + (0xdcU << 8) + 0xfeU)
 #define COMPUTED_RD_HEX ((0x10U << 24) + (0x32U << 16) + (0x54U << 8) + 0x76U)
+ */
 
-#define RA_HEX (0x67452301)
-#define RB_HEX (0xefcdab89)
-#define RC_HEX (0x98badcfe)
-#define RD_HEX (0x10325476)
 
-#define RA_BIN "01100111 01000101 00100011 00000001"
-#define RB_BIN "11101111 11001101 10101011 10001001"
-#define RC_BIN "10011000 10111010 11011100 11111110"
-#define RD_BIN "01110110 01010100 00110010 00010000"
+#define RA_HEX (0x67452301U)
+#define RB_HEX (0xefcdab89U)
+#define RC_HEX (0x98badcfeU)
+#define RD_HEX (0x10325476U)
 
 /**
  * Function for iterate on byte block
@@ -44,10 +39,11 @@
  *	I = Y ^ (X | (~Z))
 */
 
-#define FUNCT_F(X, Y, Z)    ((X & Y) | ((~X) & Z))
-#define FUNCT_G(X, Y, Z)    ((X & Z) | (Y & (~Z)))
-#define FUNCT_H(X, Y, Z)    (X ^ Y ^ Z)
-#define FUNCT_I(X, Y, Z)    (Y ^ (X | (~Z)))
+// #define FUNCT_F(X, Y, Z)    ((X & Y) | ((~X) & Z))
+// #define FUNCT_G(X, Y, Z)    ((X & Z) | (Y & (~Z)))
+// #define FUNCT_H(X, Y, Z)    (X ^ Y ^ Z)
+// #define FUNCT_I(X, Y, Z)    (Y ^ (X | (~Z)))
+
 
 /* Define MD5 block size */
 #define MD5_BLOCK_SIZE ((u32)512U)
@@ -58,19 +54,21 @@
 /* Number of M data (word) per block */
 #define M_DATA_SIZE		16
 
-/* Define order we use M data for each round */
-#define FIRST_ROUND_ORDER	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
-#define SECOND_ROUND_ORDER	{ 1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12 }
-#define THIRD_ROUND_ORDER	{ 5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2 }
-#define FOURTH_ROUND_ORDER	{ 0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9 }
+// /* Define order we use M data for each round */
+// #define FIRST_ROUND_ORDER	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+// #define SECOND_ROUND_ORDER	{ 1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12 }
+// #define THIRD_ROUND_ORDER	{ 5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2 }
+// #define FOURTH_ROUND_ORDER	{ 0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9 }
+
+// #define M_SELECTION_ORDER	{ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,6,11,0,5,10,15,4,9,14,3,8,13,2,7,12,5,8,11,14,1,4,7,10,13,0,3,6,9,12,15,2,0,7,14,5,12,3,10,1,8,15,6,13,4,11,2,9 }
 
 /* Define shift value S */
 #define SHIFT_ARRAY_SIZE	4
 /* We need to use them with the mod operator on the i number operation i % 4 */
-#define MD5_SHIFT1	{ 7, 12, 17, 22 }	/* Round 1 */
-#define MD5_SHIFT2	{ 5, 9, 14, 20 }	/* Round 2 */
-#define MD5_SHIFT3	{ 4, 11, 16, 23 }	/* Round 3 */
-#define MD5_SHIFT4	{ 6, 10, 15, 21 }	/* Round 4 */
+// #define MD5_SHIFT1	((s32 [4]){ 7, 12, 17, 22 })	/* Round 1 */
+// #define MD5_SHIFT2	((s32 [4]){ 5, 9, 14, 20 })	/* Round 2 */
+// #define MD5_SHIFT3	((s32 [4]){ 4, 11, 16, 23 })	/* Round 3 */
+// #define MD5_SHIFT4	((s32 [4]){ 6, 10, 15, 21 })	/* Round 4 */
 
 typedef struct s_md5_context {
 	u32		K[64];				/* K constant */

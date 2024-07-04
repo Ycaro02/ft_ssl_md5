@@ -8,6 +8,10 @@
 		"string": "cpp",
 		"string_view": "cpp",
 		"ssl_test.h": "c",
-		"*.tcc": "c"
+		"*.tcc": "c",
+		"vector": "c",
+		"memory": "c",
+		"optional": "c",
+		"system_error": "c"
 	}
 }

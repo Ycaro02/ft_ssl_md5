@@ -1,4 +1,5 @@
 #include "../include/ft_ssl.h"
+#include "../include/handle_endian.h"
 
 char *u64_to_binary(u64 n) {
 	char	*binary = NULL;
@@ -267,6 +268,7 @@ void MD5_init(MD5_Context *c, char *input) {
 	c->B = RB_HEX;
 	c->C = RC_HEX;
 	c->D = RD_HEX;
+
 	compute_K_constant(c->K);
 	// for (u32 i = 0; i < 64; i++) {
 	// 	ft_printf_fd(1, "K[%d]: 0x%X\n", i, c->K[i]);
@@ -282,14 +284,126 @@ void MD5_context_free(MD5_Context *c) {
 	free(c->binary_input);
 }
 
+
+
+/**
+ * @brief MD5 rounds routine
+ * @param c MD5 context
+ * @param S shift array
+ * @param func function ptr
+ * @param n round number
+ */
+// void MD5_rounds(MD5_Context *c, s32 S[4], u32 *M, u32 (*func)(u32, u32, u32), u32 n, s32 m_idx) {
+//     u32 DD = c->D;
+// 	u32 CC = c->C;
+// 	u32 BB = c->B;
+
+// 	if (n < 16)
+// 		ft_printf_fd(1, "--------------------------------\nBefore A: 0x%X -> B: 0x%X -> C: 0x%X -> D: 0x%X\n", c->A, c->B, c->C, c->D);
+//     c->D = c->C;
+//     c->C = c->B;
+//     // c->B = c->B + left_rotate((c->A + func(c->B, CC, DD) + M[m_idx] + c->K[n]), S[n % 4]);
+// 	c->B = BB + left_rotate((c->A + func(BB, CC, DD) + M[m_idx] + c->K[n]), S[n%4]);
+//     c->A = DD;
+
+
+// 	if (n < 16) {
+// 		ft_printf_fd(1, "For round %u: we use M[%d] == 0x%x -> S:%d, K:%X\n", n + 1, m_idx, M[m_idx], S[n % 4], c->K[n]);
+// 		ft_printf_fd(1, "After A: 0x%X -> B: 0x%X -> C: 0x%X -> D: 0x%X\n", c->A, c->B, c->C, c->D);
+// 	}
+// }
+u32 left_rotate(u32 x, u32 c) {
+	return ((x << c) | (x >> (32 - c)));
+}
+
+#define ROTATE_LEFT(val, shift)	(((val << shift) | (val >> (32 - shift))))
+
+u32	func_f(u32 B, u32 C, u32 D) { return ((B & C) | ((~B) & D)); }
+u32	func_g(u32 B, u32 C, u32 D) { return ((B & D) | (C & (~D))); }
+u32	func_h(u32 B, u32 C, u32 D) { return (B ^ C ^ D); }
+u32	func_i(u32 B, u32 C, u32 D) { return (C ^ (B | (~D))); }
+
+// u32 MD5_rounds_compute(MD5_Context *c, s32 S[4], u32 *M, u32 (*func)(u32, u32, u32), u32 n, s32 m_idx) {
+
+// 	u32 compute = func(c->B, c->C, c->D);
+// 	compute += c->A;
+// 	compute += M[m_idx];
+// 	compute += c->K[n];
+// 	return (left_rotate(compute, S[n % 4]));
+// }
+
+
+void MD5_block_compute(MD5_Context *c, u32 block_idx) {
+	int i = 0;
+	u32 tmp, compute;
+	// static s32 select_m[64] = M_SELECTION_ORDER;
+    static s32 select_m[] = {
+        // Round 1
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        // Round 2
+        1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12,
+        // Round 3
+        5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2,
+        // Round 4
+        0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9
+    };
+
+	static s32 shift_val[] = {
+		7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+		5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+		4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+		6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
+	};
+
+	// static s32 MD5_SHIFT1[4] = { 7, 12, 17, 22 };
+	// static s32 MD5_SHIFT2[4] = { 5, 9, 14, 20 };
+	// static s32 MD5_SHIFT3[4] = { 4, 11, 16, 23 };
+	// static s32 MD5_SHIFT4[4] = { 6, 10, 15, 21 };
+
+	(void)block_idx;
+	u32 *M = c->splited_block[0];
+
+	while (i < 64) {
+		if (i < 16) {
+			compute = func_f(c->B, c->C, c->D);
+			// compute = MD5_rounds_compute(c, MD5_SHIFT1, c->splited_block[block_idx], func_f, i, select_m[i]);
+		} else if (i < 32) {
+			compute = func_g(c->B, c->C, c->D);
+			// compute = MD5_rounds_compute(c, MD5_SHIFT2, c->splited_block[block_idx], func_g, i, select_m[i]);
+		} else if (i < 48) {
+			compute = func_h(c->B, c->C, c->D);
+			// compute = MD5_rounds_compute(c, MD5_SHIFT3, c->splited_block[block_idx], func_h, i, select_m[i]);
+		} else {
+			compute = func_i(c->B, c->C, c->D);
+			// compute = MD5_rounds_compute(c, MD5_SHIFT4, c->splited_block[block_idx], func_i, i, select_m[i]);
+		}
+		tmp = c->D;
+		c->D = c->C;
+		c->C = c->B;
+		// c->B = (c->B + compute) % (1UL << 32);
+		c->B = c->B + ROTATE_LEFT((c->A + compute + c->K[i] + M[select_m[i]]), shift_val[i]);
+		c->A = tmp;
+		i++;
+	}
+	c->A = (c->A + RA_HEX) % (1UL << 32);
+	c->B = (c->B + RB_HEX) % (1UL << 32);
+	c->C = (c->C + RC_HEX) % (1UL << 32);
+	c->D = (c->D + RD_HEX) % (1UL << 32);
+}
+
+#include <stdio.h>
+
+void display_hash(MD5_Context *c) {
+	printf("Brut display %08x%08x%08x%08x\n", c->A, c->B, c->C, c->D);
+	printf("Swap endian  %08x%08x%08x%08x\n", SWAP_BYTE_32(c->A), SWAP_BYTE_32(c->B), SWAP_BYTE_32(c->C), SWAP_BYTE_32(c->D));
+}
+
 /**
  * @brief Process the MD5 algorithm
  * @param input input string to hash
  * TODO: Implement the MD5 algorithm
  * We need to parse input before this func to give size, particulary for the file case
  * they can contain \0 and we need to know the size of the file (data to read)
- * 
- * 
  */
 void MD5_process(char *input) {
 	MD5_Context c = {0};
@@ -307,6 +421,10 @@ void MD5_process(char *input) {
 		i++;
 		current = current->next;
 	}
+
+	MD5_block_compute(&c, 0);
+
+	display_hash(&c);
 
 	MD5_context_free(&c);
 }
