@@ -285,6 +285,11 @@ void MD5_context_free(MD5_Context *c) {
 /**
  * @brief Process the MD5 algorithm
  * @param input input string to hash
+ * TODO: Implement the MD5 algorithm
+ * We need to parse input before this func to give size, particulary for the file case
+ * they can contain \0 and we need to know the size of the file (data to read)
+ * 
+ * 
  */
 void MD5_process(char *input) {
 	MD5_Context c = {0};

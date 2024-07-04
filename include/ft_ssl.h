@@ -4,6 +4,7 @@
 #include "../libft/libft.h"
 
 
+/* MD5 */
 
 /** 
  * From RFC 1321 - The MD5 Message-Digest Algorithm: https://www.ietf.org/rfc/rfc1321.txt
@@ -54,17 +55,25 @@
 /* Define MD5 last block size, 512 - len on 64 - 1 cause we need at least one padding bits  */
 #define MD5_LAST_BLOCK_SIZE ((u32)(512U - 64U - 1U))
 
+/* Number of M data (word) per block */
+#define M_DATA_SIZE		16
+
 /* Define order we use M data for each round */
 #define FIRST_ROUND_ORDER	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
 #define SECOND_ROUND_ORDER	{ 1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12 }
 #define THIRD_ROUND_ORDER	{ 5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2 }
 #define FOURTH_ROUND_ORDER	{ 0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9 }
 
-#define M_DATA_SIZE		16
-
-#define INT_BITS_SIZE	32
+/* Define shift value S */
+#define SHIFT_ARRAY_SIZE	4
+/* We need to use them with the mod operator on the i number operation i % 4 */
+#define MD5_SHIFT1	{ 7, 12, 17, 22 }	/* Round 1 */
+#define MD5_SHIFT2	{ 5, 9, 14, 20 }	/* Round 2 */
+#define MD5_SHIFT3	{ 4, 11, 16, 23 }	/* Round 3 */
+#define MD5_SHIFT4	{ 6, 10, 15, 21 }	/* Round 4 */
 
 typedef struct s_md5_context {
+	u32		K[64];				/* K constant */
 	char	*input;				/* Input string */
 	char	*binary_input;		/* Input string in binary */
 	t_list	*block_list;		/* List of binary block str */
@@ -73,7 +82,7 @@ typedef struct s_md5_context {
 		Splited block, (M data) of 16 uint (512 / 16 == 16 4 bytes word) for each block
 		first idx is block idx and second is splited data 
 	*/
-	u32		**splited_block;	/* Splited block */
+	u32		**splited_block;	/* Splited block (M word for each block) */
 	u32		list_size;			/* Size of block list */
 	u32		input_size;			/* Size of input string */
 	u32		binary_input_size;	/* Size of input string in binary */
@@ -81,7 +90,6 @@ typedef struct s_md5_context {
 	u32		B;					/* Buffer B */
 	u32		C;					/* Buffer C */
 	u32		D;					/* Buffer D */
-	u32		K[64];				/* K constant */
 } MD5_Context;
 
 /* binary_utils.c */
