@@ -72,6 +72,27 @@ char *string_to_binary(char *str) {
 	return (binary);
 }
 
+/**
+ * @brief Get a padding string
+ * @param size size of the padding
+ * @param need_padding_1 if we need to add a 1 at the beginning
+ * @return allocated char * padding string
+*/
+char *get_padding_str(u32 size, s8 need_padding_1) {
+	char *block = NULL;
+
+	if (!(block = malloc(size + 1))) {
+		ft_printf_fd(2, "Error: get_padding_str: malloc failed\n");
+		return (NULL);
+	}
+	ft_memset(block, '0', size);
+	block[size] = '\0';
+	if (need_padding_1) {
+		block[0] = '1';
+	}
+	return (block);
+}
+
 
 /**
  * @brief Build a binary block with padding if needed, and add the length of the string if it's the last block
@@ -80,28 +101,18 @@ char *string_to_binary(char *str) {
  * @param last_block if it's the last block
  * @return allocated char *str with padding if needed
 */
-
 char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 need_padding_1) {
 	
-	u32		block_size = last_block == 1 ? MD5_LAST_BLOCK_SIZE : MD5_BLOCK_SIZE; 
-	u64		mod = ft_strlen(input_string) % block_size;
+	/* If it's the last block adapt block_size  */
+	u32		block_size = last_block ? (MD5_LAST_BLOCK_SIZE + 1U) : MD5_BLOCK_SIZE; 
+	u32		mod = ft_strlen(input_string) % block_size;
 	u32		to_add = mod == 0 ? 0 : block_size - mod;
-	char	*block_str = NULL;
-	char	*padding = NULL;
-	
-	if (last_block) {
-		to_add++;
-	}
+	char	*block_str = NULL, *padding = NULL, *len_str = NULL;
 
 	if (mod != 0 || last_block) {
-		if (!(padding = malloc(to_add + 1))) {
-			ft_printf_fd(2, "Error: build_binary_block: malloc failed\n");
+		if (!(padding = get_padding_str(to_add, need_padding_1))) {
+			ft_printf_fd(2, "Error: build_binary_block: get_padding_str failed\n");
 			return (NULL);
-		}
-		ft_memset(padding, '0', to_add);
-		padding[to_add] = '\0';
-		if (need_padding_1) {
-			padding[0] = '1';
 		}
 		block_str = ft_strjoin_free(input_string, padding, 's');
 	} else {
@@ -109,9 +120,7 @@ char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 nee
 	}
 
 	if (last_block) {
-		// ft_printf_fd(1, "Before len str: %s\nlen %d\n", block_str, ft_strlen(block_str));
-		char *len_str = u64_to_binary(base_len);
-		if (!len_str) {
+		if (!(len_str = u64_to_binary(base_len))) {
 			ft_printf_fd(2, "Error: build_binary_block: u64_to_binary failed\n");
 			return (NULL);
 		}
@@ -121,26 +130,10 @@ char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 nee
 	return (block_str);
 }
 
-
-char *get_full_pad_block(s8 need_padding_1) {
-	char *block = NULL;
-
-	if (!(block = malloc(MD5_LAST_BLOCK_SIZE + 1))) {
-		ft_printf_fd(2, "Error: get_full_pad_block: malloc failed\n");
-		return (NULL);
-	}
-	ft_memset(block, '0', MD5_LAST_BLOCK_SIZE);
-	block[MD5_LAST_BLOCK_SIZE] = '\0';
-	if (need_padding_1) {
-		block[0] = '1';
-	}
-	return (block);
-}
-
 /**
- * @brief Convert a string to a binary string
- * @param str string to convert
- * @return allocated char * str converted to binary
+ * @brief Convert a string to a binary string block list of 512 bits
+ * @param str string to convert (in binary format)
+ * @return t_list * list of binary block string
 */
 t_list *string_to_binary_block_list(char *str) {
 	t_list	*binary_list = NULL, *block = NULL;
@@ -177,7 +170,7 @@ t_list *string_to_binary_block_list(char *str) {
 
 		/* If we are the last block and we need special padding (next is last == true) */
 		if (is_last_block && next_is_last) {
-			padding = get_full_pad_block(need_padding_1);
+			padding = get_padding_str(MD5_LAST_BLOCK_SIZE, need_padding_1);
 			binary_str = build_binary_block(padding, base_len, is_last_block, FALSE);
 			free(padding);
 		} else { /* Classic build */
@@ -194,7 +187,12 @@ t_list *string_to_binary_block_list(char *str) {
 	return (binary_list);
 }
 
-
+/**
+ * @brief Convert a binary string to a u32
+ * @param binary binary string
+ * @param size size to read in the binary string
+ * @return u32 converted binary string
+ */
 u32 binary_string_to_u32(char *binary, u32 size) {
 	u32 i = 0;
 	u32 res = 0;
@@ -206,7 +204,13 @@ u32 binary_string_to_u32(char *binary, u32 size) {
 	return (res);
 }
 
-void split_block(char *block, u32 **splited_block, u32 block_idx) {
+/**
+ * @brief Split a block into 16 words of 32 bits
+ * @param block block to split
+ * @param splited_block splited block to fill
+ * @param block_idx block index
+ */
+void split_block_into_word(char *block, u32 **splited_block, u32 block_idx) {
 	u32 i = 0;
 	u32 j = 0;
 
@@ -224,6 +228,10 @@ void split_block(char *block, u32 **splited_block, u32 block_idx) {
 
 #include <math.h>
 
+/**
+ * @brief Compute K constant
+ * @param K K constant to fill
+ */
 void compute_K_constant(u32 K[64]) {
 	s32 i = 0;
 
@@ -233,7 +241,12 @@ void compute_K_constant(u32 K[64]) {
 	}
 }
 
-void md5_init(MD5_Context *c, char *input) {
+/**
+ * @brief Initialize the MD5 context
+ * @param c MD5 context to initialize
+ * @param input input string to hash (in ascii)
+ */
+void MD5_init(MD5_Context *c, char *input) {
 	u32 i = 0;
 
 	c->input = input;
@@ -245,7 +258,7 @@ void md5_init(MD5_Context *c, char *input) {
 	c->list_size = ft_lstsize(c->block_list);
 	c->splited_block = malloc(sizeof(u32 *) * c->list_size);
 
-	while (i < M_DATA_SIZE) {
+	while (i < c->list_size) {
 		c->splited_block[i] = malloc(sizeof(u32) * 16);
 		i++;
 	}
@@ -260,20 +273,35 @@ void md5_init(MD5_Context *c, char *input) {
 	// }
 }
 
-void md5_process(char *input) {
+void MD5_context_free(MD5_Context *c) {
+	ft_lstclear(&c->block_list, free);
+	for (u32 i = 0; i < c->list_size; i++) {
+		free(c->splited_block[i]);
+	}
+	free(c->splited_block);
+	free(c->binary_input);
+}
+
+/**
+ * @brief Process the MD5 algorithm
+ * @param input input string to hash
+ */
+void MD5_process(char *input) {
 	MD5_Context c = {0};
 	t_list		*current = NULL;
 	u32			i = 0;
 
-	md5_init(&c, input);
+	MD5_init(&c, input);
 	ft_printf_fd(1, CYAN"Input: %s\nInput Bin %s\n", input, c.binary_input);
 	ft_printf_fd(1, "Input size: %u --> %u == 0x%x\n", c.input_size, c.binary_input_size, c.binary_input_size);
 	ft_printf_fd(1, "List size: %u\n"RESET, c.list_size);
 	current = c.block_list;
 	while (i < c.list_size) {
 		ft_printf_fd(1, ORANGE"Block content:\n"RESET"%s\n", current->content);
-		split_block(current->content, c.splited_block, i);
+		split_block_into_word(current->content, c.splited_block, i);
 		i++;
 		current = current->next;
 	}
+
+	MD5_context_free(&c);
 }

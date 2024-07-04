@@ -4,6 +4,6 @@
 
 int main() {
 	run_test();
-	md5_process(TESTSTRING);
+	MD5_process(TESTSTRING);
 	return (0);
 }

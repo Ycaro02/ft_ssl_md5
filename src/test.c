@@ -197,13 +197,13 @@ void test_string_to_binary_block_list() {
 	check_binary_blocks(ft_strdup("a"), 1);
 	check_binary_blocks(ft_strdup(STRING447), 1);
 	check_binary_blocks(ft_strdup(STRING448), 2);
-	check_binary_blocks(string_to_binary(TESTSTRING), 2);
 	check_binary_blocks(ft_strdup(STRING500), 2);
 	check_binary_blocks(ft_strdup(STRING511), 2);
 	check_binary_blocks(ft_strdup(STRING512), 2);
 	check_binary_blocks(ft_strdup(STRING513), 2);
 	check_binary_blocks(ft_strdup(STRING1023), 3);
 	check_binary_blocks(ft_strdup(STRING1024), 3);
+	check_binary_blocks(string_to_binary(TESTSTRING), 2);
 	test_passed(__func__);
 }
 
