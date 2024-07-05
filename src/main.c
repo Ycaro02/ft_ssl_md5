@@ -24,8 +24,24 @@ enum e_flag {
 #define R_FLAG_CHAR	'r'
 #define S_FLAG_CHAR	's'
 
+void set_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find, void *to_update)
+{
+	if (has_flag(flag, to_find)) {
+		t_opt_node *opt = search_exist_opt(opt_lst, is_same_flag_val_opt, (void *)&to_find);
+		// ft_printf_fd(1, "for tofind %u: opt: %p\n", to_find, opt);
+		if (!opt) {
+			return ;
+		}
+		if (opt->value_type == DECIMAL_VALUE) {
+			*(uint32_t *)to_update = opt->val.digit;
+		} else if (opt->value_type == HEXA_VALUE || opt->value_type == CHAR_VALUE) {
+			*(char **)to_update = ft_strdup(opt->val.str);
+			// ft_printf_fd(1, "to_update: %s\n", *(char **)to_update);
+		}
+	}
+}
 
-s8 handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
+s8 handle_flag(int argc, char **argv, t_flag_context *flag_ctx, char **input_str) {
 
 	add_flag_option(flag_ctx, P_FLAG_CHAR, P_OPTION, OPT_NO_VALUE, OPT_NO_VALUE, "print");
 	add_flag_option(flag_ctx, Q_FLAG_CHAR, Q_OPTION, OPT_NO_VALUE, OPT_NO_VALUE, "quiet");
@@ -42,6 +58,8 @@ s8 handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
 
 	display_option_list(*flag_ctx);
 
+	set_opt_value(flag_ctx->opt_lst, flag, S_OPTION, input_str);
+
 	return (TRUE);
 }
 
@@ -51,16 +69,18 @@ int main(int argc, char **argv) {
 
 	t_flag_context flag_ctx = {0};
 
-	handle_flag(argc, argv, &flag_ctx);
+	char *s_flag_input = NULL;
+	handle_flag(argc, argv, &flag_ctx, &s_flag_input);
+	if (s_flag_input) {
+		MD5_process((u8 *)s_flag_input, ft_strlen(s_flag_input));
+	}
 
 
-	MD5_process((u8 *)"abc", ft_strlen("abc"));
-	MD5_process((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
-
-
-	MD5_hash_file("Makefile");
-	MD5_hash_file("src/main.c");
-	MD5_hash_file("ft_ssl");
+	// MD5_process((u8 *)"abc", ft_strlen("abc"));
+	// MD5_process((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
+	// MD5_hash_file("Makefile");
+	// MD5_hash_file("src/main.c");
+	// MD5_hash_file("ft_ssl");
 
 	return (0);
 }
