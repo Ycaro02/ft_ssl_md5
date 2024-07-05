@@ -1,10 +1,7 @@
 #include "../include/ft_ssl.h"
 #include "../include/handle_endian.h"
 
-
 #include <math.h>
-// #include <stdio.h>
-
 
 char *u64_to_binary(u64 n) {
 	char	*binary = NULL;
@@ -141,7 +138,7 @@ char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 nee
  * @param str string to convert (in binary format)
  * @return t_list * list of binary block string
 */
-t_list *string_to_binary_block_list(char *str) {
+t_list *binary_string_to_block_lst(char *str) {
 	t_list	*binary_list = NULL, *block = NULL;
 	char	*binary_str = NULL, *padding = NULL;
 	u64		base_len = ft_strlen(str), tmp_len = 0;
@@ -199,7 +196,7 @@ t_list *string_to_binary_block_list(char *str) {
  * @param size size to read in the binary string
  * @return u32 converted binary string (in big endian)
  */
-u32 binary_string_to_u32(char *binary, u32 size) {
+u32 binary_string_to_u32(char *binary, u32 size, s8 rev_endian) {
 	u32 i = 0;
 	u32 res = 0;
 
@@ -208,7 +205,10 @@ u32 binary_string_to_u32(char *binary, u32 size) {
 		res = (res << 1) + (binary[i] - '0');
 		i++;
 	}
-	return (SWAP_BYTE_32(res));
+	if (rev_endian) {
+		return (SWAP_BYTE_32(res));
+	}
+	return (res);
 }
 
 /**
@@ -223,7 +223,7 @@ void MD5_split_block(char *block, u32 **splited_block, u32 block_idx, u32 max_bl
 
 	while (j < 16) {
 		/* Convert binary string in u32 and inverse endian ( little to big )*/
-		splited_block[block_idx][j] = binary_string_to_u32(block + i, 32);
+		splited_block[block_idx][j] = binary_string_to_u32(block + i, 32, TRUE);
 		i += 32;
 		j++;
 	}
@@ -277,7 +277,7 @@ void MD5_init(MD5_Context *c, char *input) {
 	
 	
 	c->binary_input = string_to_binary(input, c->input_size);
-	c->block_list = string_to_binary_block_list(c->binary_input);
+	c->block_list = binary_string_to_block_lst(c->binary_input);
 	c->binary_input_size = c->input_size * 8;
 	c->list_size = ft_lstsize(c->block_list);
 	c->splited_block = malloc(sizeof(u32 *) * c->list_size);

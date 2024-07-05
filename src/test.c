@@ -144,7 +144,7 @@ void verify_length(char *block_content, u64 block_len, u64 base_len) {
  * @param expected_block_count expected block count
 */
 void check_binary_blocks(char *input_str, int expected_block_count) {
-    t_list *binary_list = string_to_binary_block_list(input_str);
+    t_list *binary_list = binary_string_to_block_lst(input_str);
     int block_count = ft_lstsize(binary_list);
     assert(block_count == expected_block_count);
 
@@ -192,7 +192,7 @@ void check_binary_blocks(char *input_str, int expected_block_count) {
     ft_lstclear(&binary_list, free);
 }
 
-void test_string_to_binary_block_list() {
+void test_binary_string_to_block_lst() {
 	// check_binary_blocks(ft_strdup(""), 1);
 	check_binary_blocks(ft_strdup("a"), 1);
 	check_binary_blocks(ft_strdup(STRING447), 1);
@@ -212,7 +212,7 @@ void run_test() {
 	test_atoi_base();
 	test_string_to_binary();
 	test_u64_to_binary();
-	test_string_to_binary_block_list();
+	test_binary_string_to_block_lst();
 }
 
 
@@ -220,7 +220,7 @@ void run_test() {
 // human test
 // void test_string_to_block(char *str) {
 // 	char *allocated_str = ft_strdup(str);
-// 	t_list *lst = string_to_binary_block_list(allocated_str);
+// 	t_list *lst = binary_string_to_block_lst(allocated_str);
 // 	t_list *tmp = lst;
 // 	ft_printf_fd(1, RED"Test string len: %u -> "RESET, ft_strlen(str));
 // 	ft_printf_fd(1, PINK"List size: %d\n"RESET""YELLOW"Data:\n"RESET, ft_lstsize(lst));
