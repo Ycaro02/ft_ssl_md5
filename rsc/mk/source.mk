@@ -10,7 +10,8 @@ MAIN_MANDATORY 	=	main.c
 
 SRCS			=	test.c\
 					binary_utils.c\
-					atoi_base.c
+					atoi_base.c\
+					md5.c\
 
 # SRCS_BONUS		=	main_bonus.c
 

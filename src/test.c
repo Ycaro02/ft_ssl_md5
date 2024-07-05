@@ -61,7 +61,6 @@ void test_u64_to_binary() {
 /* rsc/sh/str2bin.sh convert $1 to bin, we need to get the output */
 char *bash_convert_str(char *str) {
     char	*baseCmd = "bash rsc/sh/str2bin.sh \"%s\"";
-    // char	cmd[4096];
     char	*cmd = NULL;
 	
 	u64 total_cmd_len = ((ft_strlen(baseCmd)) + ft_strlen(str) + 1);
@@ -78,7 +77,7 @@ char *bash_convert_str(char *str) {
     }
 
 	/* Read output */
-	u32 output_len = ft_strlen(str) * 8 + 1;
+	u32 output_len = ft_strlen((char *)str) * 8 + 1;
     char *output = malloc(output_len + 1);
     if (!output) {
 		ft_printf_fd(2, "Error: bash_convert_str: malloc failed\n");
@@ -99,7 +98,7 @@ char *bash_convert_str(char *str) {
 
 void test_string_bash(char *str) {
 	char *bash_binary = bash_convert_str(str);
-	char *binary = string_to_binary(str, (u64)ft_strlen(str));
+	char *binary = string_to_binary((u8 *)str, (u64)ft_strlen(str));
 
 	assert(ftlib_strcmp(binary, bash_binary) == 0);
 	free(binary);
@@ -203,9 +202,14 @@ void test_binary_string_to_block_lst() {
 	check_binary_blocks(ft_strdup(STRING513), 2);
 	check_binary_blocks(ft_strdup(STRING1023), 3);
 	check_binary_blocks(ft_strdup(STRING1024), 3);
-	check_binary_blocks(string_to_binary(TESTSTRING, ft_strlen(TESTSTRING)), 2);
+	check_binary_blocks(string_to_binary((u8 *)TESTSTRING, ft_strlen(TESTSTRING)), 2);
 	test_passed(__func__);
 }
+
+// void test_MD5_process() {
+// 	MD5_process((u8 *)"abc", ft_strlen("abc"));
+// 	MD5_process((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
+// }
 
 void run_test() {
 	test_char_to_binary();

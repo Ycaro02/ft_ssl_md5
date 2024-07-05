@@ -14,6 +14,8 @@
 		"optional": "c",
 		"system_error": "c",
 		"cstddef": "c",
-		"random": "c"
+		"random": "c",
+		"mman.h": "c",
+		"handle_endian.h": "c"
 	}
 }

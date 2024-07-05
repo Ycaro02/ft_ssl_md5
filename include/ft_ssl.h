@@ -68,9 +68,10 @@ FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 
 typedef struct s_md5_context {
 	u32		K[64];				/* K constant */
-	char	*input;				/* Input string */
+	u8		*input;				/* Input string */
 	char	*binary_input;		/* Input string in binary */
 	t_list	*block_list;		/* List of binary block str */
+
 	
 	/*	
 		Splited block, (M data) of 16 uint (512 / 16 == 16 4 bytes word) for each block
@@ -86,14 +87,53 @@ typedef struct s_md5_context {
 	u32		D;					/* Buffer D */
 } MD5_Context;
 
-/* binary_utils.c */
-char	*char_to_binary(char c);
-char	*u64_to_binary(u64 n);
-char	*string_to_binary(char *str, u64 len);
-// char	*build_binary_block(char *str, u64 base_len, s8 last_block);
-t_list	*binary_string_to_block_lst(char *str);
-void	MD5_process(char *input);
 /* atoi_base.c */
 int		ft_atoi_base(char *str, char *base);
+
+/* binary_utils.c */
+char	*char_to_binary(u8 c);
+char	*u64_to_binary(u64 n);
+char	*string_to_binary(u8 *str, u64 len);
+u32		binary_string_to_u32(char *binary, u32 size, s8 rev_endian);
+t_list	*binary_string_to_block_lst(char *str);
+
+/* md5.c*/
+void	MD5_process(u8 *input, u64 len);
+void	MD5_hash_file(char *path);
+
+/* Used for load file easier than read and multiple alloc */
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+FT_INLINE u8 *load_mmap_file(char *path, u64 *file_size, u32 min_size)
+{
+    struct stat	st;
+	void		*map;
+    int			fd = open(path, O_RDONLY);
+
+    if (fd == -1) {
+        ft_printf_fd(2, "Failed to open file %s\n", path);
+        return (NULL);
+    }
+
+    ft_bzero(&st, sizeof(st));
+    fstat(fd, &st);
+    *file_size = st.st_size;
+
+    if (*file_size <= min_size) {
+        close(fd);
+        ft_printf_fd(2, "File %s is empty\n", path);
+        return (NULL);
+    }
+
+    map = mmap(0, *file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+    if (map == MAP_FAILED) {
+        close(fd);
+        ft_printf_fd(2, "Failed to open file %s\n", path);
+        return (NULL);
+    }
+    return (map);
+}
 
 #endif /* HEADER_FT_SSL_H */
