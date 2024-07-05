@@ -16,6 +16,7 @@
 		"cstddef": "c",
 		"random": "c",
 		"mman.h": "c",
-		"handle_endian.h": "c"
+		"handle_endian.h": "c",
+		"initializer_list": "c"
 	}
 }

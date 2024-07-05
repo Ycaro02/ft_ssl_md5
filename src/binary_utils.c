@@ -1,46 +1,6 @@
 #include "../include/ft_ssl.h"
 #include "../include/handle_endian.h"
 
-// #include <math.h>
-
-char *u64_to_binary(u64 n) {
-	char	*binary = NULL;
-	s32		i = 63;
-
-	if (!(binary = malloc(64 + 1))) {
-		return (NULL);
-	}
-	binary[64] = '\0';
-	while (i >= 0) {
-		binary[i] = n % 2 + '0';
-		n /= 2;
-		i--;
-	}
-	return (binary);
-}
-
-/**
- * @brief Convert a char to a binary string
- * @param c char to convert
- * @return allocated char * c converted to binary
-*/
-char *char_to_binary(u8 c)
-{
-	char	*binary = NULL;
-	s32		i = 7;
-
-	if (!(binary = malloc(8 + 1))) {
-		return (NULL);
-	}
-	binary[8] = '\0';
-	while (i >= 0) {
-		binary[i] = c % 2 + '0';
-		c /= 2;
-		i--;
-	}
-	return (binary);
-}
-
 /**
  * @brief Convert a string to a binary string
  * @param str string to convert
@@ -55,7 +15,8 @@ char *string_to_binary(u8 *str, u64 len) {
 		return (NULL);
 	}
 	while (i < len) {
-		tmp = char_to_binary(str[i]);
+		// tmp = char_to_binary(str[i]);
+		DIGIT_TO_BINSTR(str[i], 8, tmp);
 		if (!tmp) {
 			ft_printf_fd(2, "Error: string_to_binary: malloc failed\n");
 			free(binary);
@@ -123,7 +84,9 @@ char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 nee
 	}
 
 	if (last_block) {
-		if (!(len_str = u64_to_binary(base_len))) {
+		// if (!(len_str = u64_to_binary(base_len))) {
+		DIGIT_TO_BINSTR(base_len, 64, len_str);
+		if (!len_str) {
 			ft_printf_fd(2, "Error: build_binary_block: u64_to_binary failed\n");
 			return (NULL);
 		}

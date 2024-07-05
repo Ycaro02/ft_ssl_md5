@@ -4,6 +4,8 @@
 #include "../libft/libft.h"
 
 
+
+
 /* MD5 */
 
 /** 
@@ -91,8 +93,8 @@ typedef struct s_md5_context {
 int		ft_atoi_base(char *str, char *base);
 
 /* binary_utils.c */
-char	*char_to_binary(u8 c);
-char	*u64_to_binary(u64 n);
+// char	*char_to_binary(u8 c);
+// char	*u64_to_binary(u64 n);
 char	*string_to_binary(u8 *str, u64 len);
 u32		binary_string_to_u32(char *binary, u32 size, s8 rev_endian);
 t_list	*binary_string_to_block_lst(char *str);
@@ -100,6 +102,32 @@ t_list	*binary_string_to_block_lst(char *str);
 /* md5.c*/
 void	MD5_process(u8 *input, u64 len);
 void	MD5_hash_file(char *path);
+
+
+/**
+ * @brief Macro to convert a digit to a binary string
+ * @param digit digit to convert
+ * @param size size of the digit (in bits)
+ * @param result store allocated char * digit converted to binary (output)
+ */
+#define DIGIT_TO_BINSTR(digit, size, result) \
+do { \
+    char *__binstr__ = (char *)malloc((size) + 1); \
+	u64 __tmp_digit__ = (digit); \
+    if (!__binstr__) { \
+        ft_printf_fd(2, "Error: DIGIT_TO_BIN_STR: malloc failed\n"); \
+        result = NULL; \
+    } else { \
+        __binstr__[size] = '\0'; \
+		__tmp_digit__ = (digit); \
+        for (s32 i = (size) - 1; i >= 0; i--) { \
+            __binstr__[i] = (__tmp_digit__ % 2) + '0'; \
+            __tmp_digit__ /= 2; \
+        } \
+        result = __binstr__; \
+    } \
+} while (0)
+
 
 /* Used for load file easier than read and multiple alloc */
 #include <sys/mman.h>

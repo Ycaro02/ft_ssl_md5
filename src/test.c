@@ -22,6 +22,44 @@ void test_atoi_base() {
 	test_passed(__func__);
 }
 
+char *u64_to_binary(u64 n) {
+	char	*binary = NULL;
+	s32		i = 63;
+
+	if (!(binary = malloc(64 + 1))) {
+		return (NULL);
+	}
+	binary[64] = '\0';
+	while (i >= 0) {
+		binary[i] = n % 2 + '0';
+		n /= 2;
+		i--;
+	}
+	return (binary);
+}
+
+/**
+ * @brief Convert a char to a binary string
+ * @param c char to convert
+ * @return allocated char * c converted to binary
+*/
+char *char_to_binary(u8 c)
+{
+	char	*binary = NULL;
+	s32		i = 7;
+
+	if (!(binary = malloc(8 + 1))) {
+		return (NULL);
+	}
+	binary[8] = '\0';
+	while (i >= 0) {
+		binary[i] = c % 2 + '0';
+		c /= 2;
+		i--;
+	}
+	return (binary);
+}
+
 void test_char_to_binary() {
 	char *binary = char_to_binary('a');
 
@@ -54,6 +92,43 @@ void test_u64_to_binary() {
     free(binary);
     
     test_passed(__func__);
+}
+
+void test_digit_macro_char(char c) {
+	char *macrostr = NULL;
+	char *basic_funcstr = char_to_binary(c);
+	DIGIT_TO_BINSTR(c, 8, macrostr);
+	assert(ftlib_strcmp(macrostr, basic_funcstr) == 0);
+	free(macrostr);
+	free(basic_funcstr);
+}
+
+void test_digit_macro_u64(u64 n) {
+	char *macrostr = NULL;
+	char *basic_funcstr = u64_to_binary(n);
+	DIGIT_TO_BINSTR(n, 64, macrostr);
+	assert(ftlib_strcmp(macrostr, basic_funcstr) == 0);
+	free(macrostr);
+	free(basic_funcstr);
+}
+
+void test_digit_macro() {
+	test_digit_macro_char('a');
+	test_digit_macro_char('b');
+	test_digit_macro_char('y');
+	test_digit_macro_char('z');
+	test_digit_macro_char('A');
+	test_digit_macro_char('B');
+	test_digit_macro_char(' ');
+	test_digit_macro_char('!');
+
+	test_digit_macro_u64(1UL);
+	test_digit_macro_u64(2UL);
+	test_digit_macro_u64(1023UL);
+	test_digit_macro_u64(4294967295UL);
+	test_digit_macro_u64(4294967296UL);
+
+	test_passed(__func__);
 }
 
 #include <stdio.h>
@@ -217,6 +292,7 @@ void run_test() {
 	test_string_to_binary();
 	test_u64_to_binary();
 	test_binary_string_to_block_lst();
+	test_digit_macro();
 }
 
 
