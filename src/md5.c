@@ -187,7 +187,7 @@ void MD5_process(u8 *input, u64 input_size) {
 */
 void MD5_hash_file(char *path) {
 	u64 file_size = 0;
-	u8 *file_map = load_mmap_file(path, &file_size, 0);
+	u8 *file_map = mmap_file(path, &file_size, 0);
 	if (file_map) {
 		ft_printf_fd(1, YELLOW"File %s size: %u\n"RESET, path, file_size);
 		MD5_process(file_map, file_size);

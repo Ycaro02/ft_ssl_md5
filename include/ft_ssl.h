@@ -3,9 +3,6 @@
 
 #include "../libft/libft.h"
 
-
-
-
 /* MD5 */
 
 /** 
@@ -41,7 +38,6 @@
  *	I = Y ^ (X | (~Z))
 */
 
-
 FT_INLINE u32	func_f(u32 b, u32 c, u32 d) { return ((b & c) | ((~b) & d)); }
 FT_INLINE u32	func_g(u32 b, u32 c, u32 d) { return ((d & b) | ((~d) & c)); }
 FT_INLINE u32	func_h(u32 b, u32 c, u32 d) { return (b ^ c ^ d); }
@@ -64,7 +60,7 @@ FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 
 /* We need to use them with the mod operator on the i number operation i % 4 */
 #define MD5_SHIFT1	((u32 [4]){ 7, 12, 17, 22 })	/* Round 1 */
-#define MD5_SHIFT2	((u32 [4]){ 5, 9, 14, 20 })	/* Round 2 */
+#define MD5_SHIFT2	((u32 [4]){ 5, 9, 14, 20 })		/* Round 2 */
 #define MD5_SHIFT3	((u32 [4]){ 4, 11, 16, 23 })	/* Round 3 */
 #define MD5_SHIFT4	((u32 [4]){ 6, 10, 15, 21 })	/* Round 4 */
 
@@ -121,19 +117,24 @@ do { \
         __binstr__[size] = '\0'; \
 		__tmp_digit__ = (digit); \
         for (s32 i = (size) - 1; i >= 0; i--) { \
-            __binstr__[i] = (__tmp_digit__ % 2) + '0'; \
-            __tmp_digit__ /= 2; \
+			__binstr__[i] = (__tmp_digit__ & 1) + '0'; \
+            __tmp_digit__ >>= 1; \
         } \
         result = __binstr__; \
     } \
 } while (0)
+
+/* 
+	__binstr__[i] = (__tmp_digit__ & 1) + '0'; == __binstr__[i] = (__tmp_digit__ % 2) + '0'
+	__tmp_digit__ >>= 1; == __tmp_digit__ /= 2;
+*/
 
 
 /* Used for load file easier than read and multiple alloc */
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-FT_INLINE u8 *load_mmap_file(char *path, u64 *file_size, u32 min_size)
+FT_INLINE u8 *mmap_file(char *path, u64 *file_size, u32 min_size)
 {
     struct stat	st;
 	void		*map;
