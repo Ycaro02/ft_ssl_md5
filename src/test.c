@@ -99,7 +99,7 @@ char *bash_convert_str(char *str) {
 
 void test_string_bash(char *str) {
 	char *bash_binary = bash_convert_str(str);
-	char *binary = string_to_binary(str);
+	char *binary = string_to_binary(str, (u64)ft_strlen(str));
 
 	assert(ftlib_strcmp(binary, bash_binary) == 0);
 	free(binary);
@@ -203,7 +203,7 @@ void test_string_to_binary_block_list() {
 	check_binary_blocks(ft_strdup(STRING513), 2);
 	check_binary_blocks(ft_strdup(STRING1023), 3);
 	check_binary_blocks(ft_strdup(STRING1024), 3);
-	check_binary_blocks(string_to_binary(TESTSTRING), 2);
+	check_binary_blocks(string_to_binary(TESTSTRING, ft_strlen(TESTSTRING)), 2);
 	test_passed(__func__);
 }
 

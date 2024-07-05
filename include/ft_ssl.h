@@ -39,10 +39,13 @@
  *	I = Y ^ (X | (~Z))
 */
 
-// #define FUNCT_F(X, Y, Z)    ((X & Y) | ((~X) & Z))
-// #define FUNCT_G(X, Y, Z)    ((X & Z) | (Y & (~Z)))
-// #define FUNCT_H(X, Y, Z)    (X ^ Y ^ Z)
-// #define FUNCT_I(X, Y, Z)    (Y ^ (X | (~Z)))
+
+FT_INLINE u32	func_f(u32 b, u32 c, u32 d) { return ((b & c) | ((~b) & d)); }
+FT_INLINE u32	func_g(u32 b, u32 c, u32 d) { return ((d & b) | ((~d) & c)); }
+FT_INLINE u32	func_h(u32 b, u32 c, u32 d) { return (b ^ c ^ d); }
+FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
+
+#define ROTATE_LEFT(val, shift) (((val) << (shift)) | ((val) >> (32 - shift)))
 
 
 /* Define MD5 block size */
@@ -54,21 +57,14 @@
 /* Number of M data (word) per block */
 #define M_DATA_SIZE		16
 
-// /* Define order we use M data for each round */
-// #define FIRST_ROUND_ORDER	{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
-// #define SECOND_ROUND_ORDER	{ 1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12 }
-// #define THIRD_ROUND_ORDER	{ 5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2 }
-// #define FOURTH_ROUND_ORDER	{ 0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9 }
-
-// #define M_SELECTION_ORDER	{ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1,6,11,0,5,10,15,4,9,14,3,8,13,2,7,12,5,8,11,14,1,4,7,10,13,0,3,6,9,12,15,2,0,7,14,5,12,3,10,1,8,15,6,13,4,11,2,9 }
-
 /* Define shift value S */
 #define SHIFT_ARRAY_SIZE	4
+
 /* We need to use them with the mod operator on the i number operation i % 4 */
-// #define MD5_SHIFT1	((s32 [4]){ 7, 12, 17, 22 })	/* Round 1 */
-// #define MD5_SHIFT2	((s32 [4]){ 5, 9, 14, 20 })	/* Round 2 */
-// #define MD5_SHIFT3	((s32 [4]){ 4, 11, 16, 23 })	/* Round 3 */
-// #define MD5_SHIFT4	((s32 [4]){ 6, 10, 15, 21 })	/* Round 4 */
+#define MD5_SHIFT1	((u32 [4]){ 7, 12, 17, 22 })	/* Round 1 */
+#define MD5_SHIFT2	((u32 [4]){ 5, 9, 14, 20 })	/* Round 2 */
+#define MD5_SHIFT3	((u32 [4]){ 4, 11, 16, 23 })	/* Round 3 */
+#define MD5_SHIFT4	((u32 [4]){ 6, 10, 15, 21 })	/* Round 4 */
 
 typedef struct s_md5_context {
 	u32		K[64];				/* K constant */
@@ -93,7 +89,7 @@ typedef struct s_md5_context {
 /* binary_utils.c */
 char	*char_to_binary(char c);
 char	*u64_to_binary(u64 n);
-char	*string_to_binary(char *str);
+char	*string_to_binary(char *str, u64 len);
 // char	*build_binary_block(char *str, u64 base_len, s8 last_block);
 t_list	*string_to_binary_block_list(char *str);
 void	MD5_process(char *input);

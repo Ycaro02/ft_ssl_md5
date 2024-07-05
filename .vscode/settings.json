@@ -13,6 +13,7 @@
 		"memory": "c",
 		"optional": "c",
 		"system_error": "c",
-		"cstddef": "c"
+		"cstddef": "c",
+		"random": "c"
 	}
 }
