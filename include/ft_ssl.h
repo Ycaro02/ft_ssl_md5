@@ -108,14 +108,13 @@ void	MD5_hash_file(char *path);
  */
 #define DIGIT_TO_BINSTR(digit, size, result) \
 do { \
-    char *__binstr__ = (char *)malloc((size) + 1); \
+    char *__binstr__ = malloc((size) + 1); \
 	u64 __tmp_digit__ = (digit); \
     if (!__binstr__) { \
         ft_printf_fd(2, "Error: DIGIT_TO_BIN_STR: malloc failed\n"); \
         result = NULL; \
     } else { \
         __binstr__[size] = '\0'; \
-		__tmp_digit__ = (digit); \
         for (s32 i = (size) - 1; i >= 0; i--) { \
 			__binstr__[i] = (__tmp_digit__ & 1) + '0'; \
             __tmp_digit__ >>= 1; \

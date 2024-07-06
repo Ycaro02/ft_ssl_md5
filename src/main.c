@@ -3,8 +3,6 @@
 
 #include "../libft/parse_flag/parse_flag.h"
 
-#define FLAG_P	1
-
 /*
 	-p, echo STDIN to STDOUT and append the checksum to STDOUT
 	-q, quiet mode
