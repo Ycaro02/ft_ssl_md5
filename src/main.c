@@ -76,28 +76,46 @@ int cmp_large_str(u8 *s1, u8 *s2, u64 size) {
  * @brief Hash a file with MD5 algorithm
  * @param path file path
 */
-void MD5_hash_file_read(char *path) {
-	u64 file_size = 0, map_file_size = 0;
-	char *file_map = sstring_brut_load_file(path, &file_size);
-	u8   *map = mmap_file(path, &file_size, 0);
+void MD5_hash_file(char *path) {
+	u64		file_size = 0;
+	char	*file_map = sstring_read_fd(-1, path, &file_size);
+	
+	
 
+	// To remove
+	u8		*map = mmap_file(path, &file_size, 0);
+	u64 	map_file_size = 0;
 	if (cmp_large_str((u8 *)file_map, map, map_file_size) == 0) {
 		ft_printf_fd(1, GREEN"Same %s size: %u\n"RESET, path, file_size);
 	} else {
 		ft_printf_fd(1, RED"Not Same %s size: %u\n"RESET, path, file_size);
 	}
-	munmap(map, map_file_size);
+	if (map) {
+		ft_printf_fd(1, YELLOW"mmap load File %s size: %u\n"RESET, path, file_size);
+		MD5_process(map, file_size);
+		munmap(map, map_file_size);
+	}
+
 	if (file_map) {
-		ft_printf_fd(1, YELLOW"MD5_hash_file_read File %s size: %u\n"RESET, path, file_size);
+		ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
 		MD5_process((u8 *)file_map, file_size);
 		free(file_map);
 	}
 }
 
+void read_stdin() {
+	u64 size_read = 0;
+	char *content = sstring_read_fd(0, NULL, &size_read);
+	if (content) {
+		// ft_printf_fd(1, "content: %s -> size %u\n", content, size_read);
+		MD5_process((u8 *)content, size_read);
+	}
+
+}
+
 int main(int argc, char **argv) {
 	run_test();
 
-	// (void)argc, (void)argv;
 	t_flag_context flag_ctx = {0};
 
 	char *s_flag_input = NULL;
@@ -108,13 +126,11 @@ int main(int argc, char **argv) {
 
 	// MD5_process((u8 *)"abc", ft_strlen("abc"));
 	// MD5_process((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
-	// MD5_hash_file("Makefile");
 	// MD5_hash_file_read("Makefile");
-	// MD5_hash_file("src/main.c");
 	// MD5_hash_file_read("src/main.c");
 	MD5_hash_file("ft_ssl");
-	MD5_hash_file_read("ft_ssl");
 
 
+	// read_stdin();
 	return (0);
 }
