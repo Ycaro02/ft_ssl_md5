@@ -24,32 +24,40 @@ enum e_flag {
 #define R_FLAG_CHAR	'r'
 #define S_FLAG_CHAR	's'
 
-void set_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find, void *to_update)
+void *get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find)
 {
+	t_opt_node	*opt = NULL;
+	void		*ret = NULL;
+
 	if (has_flag(flag, to_find)) {
-		t_opt_node *opt = search_exist_opt(opt_lst, is_same_flag_val_opt, (void *)&to_find);
-		// ft_printf_fd(1, "for tofind %u: opt: %p\n", to_find, opt);
-		if (!opt) {
-			return ;
-		}
-		if (opt->value_type == DECIMAL_VALUE) {
-			*(uint32_t *)to_update = opt->val.digit;
-		} else if (opt->value_type == HEXA_VALUE || opt->value_type == CHAR_VALUE) {
-			*(char **)to_update = ft_strdup(opt->val.str);
-			// ft_printf_fd(1, "to_update: %s\n", *(char **)to_update);
+		opt = search_exist_opt(opt_lst, is_same_flag_val_opt, (void *)&to_find);
+		if (opt && opt->value_type == DECIMAL_VALUE) {
+			ret = malloc(sizeof(u32));
+			*(u32 *)ret = opt->val.digit;
+		} else if (opt && (opt->value_type == HEXA_VALUE || opt->value_type == CHAR_VALUE)) {
+			ret = ft_strdup(opt->val.str);
 		}
 	}
+	return (ret);
 }
 
-s8 handle_flag(int argc, char **argv, t_flag_context *flag_ctx, char **input_str) {
-
+void ssl_opt_flag_init(char *prg_name, t_flag_context *flag_ctx) {
+	flag_ctx->prg_name = prg_name;
 	add_flag_option(flag_ctx, P_FLAG_CHAR, P_OPTION, OPT_NO_VALUE, OPT_NO_VALUE, "print");
 	add_flag_option(flag_ctx, Q_FLAG_CHAR, Q_OPTION, OPT_NO_VALUE, OPT_NO_VALUE, "quiet");
 	add_flag_option(flag_ctx, R_FLAG_CHAR, R_OPTION, OPT_NO_VALUE, OPT_NO_VALUE, "reverse");
 	add_flag_option(flag_ctx, S_FLAG_CHAR, S_OPTION, (UINT32_MAX - 1), CHAR_VALUE, "string");
+}
 
+s8 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx, char **input_str) {
 	s8 error = 0;
-	u32 flag = parse_flag(argc, argv, flag_ctx, &error);
+	u32 flag = 0;
+
+
+	ssl_opt_flag_init(argv[0], flag_ctx);
+
+	/* Need to adapt to to -1/+1 for skip first args (hash function argument)*/
+	flag = parse_flag(argc, argv, flag_ctx, &error);
 	if (error == -1) {
 		ft_printf_fd(1, "Parse_flag error: %d\n", error);
 		return (FALSE);
@@ -58,7 +66,7 @@ s8 handle_flag(int argc, char **argv, t_flag_context *flag_ctx, char **input_str
 
 	display_option_list(*flag_ctx);
 
-	set_opt_value(flag_ctx->opt_lst, flag, S_OPTION, input_str);
+	*input_str = get_opt_value(flag_ctx->opt_lst, flag, S_OPTION);
 
 	return (TRUE);
 }
@@ -95,6 +103,7 @@ void MD5_hash_file(char *path) {
 		MD5_process(map, file_size);
 		munmap(map, map_file_size);
 	}
+	// end to remove
 
 	if (file_map) {
 		ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
@@ -118,8 +127,9 @@ int main(int argc, char **argv) {
 
 	t_flag_context flag_ctx = {0};
 
+
 	char *s_flag_input = NULL;
-	handle_flag(argc, argv, &flag_ctx, &s_flag_input);
+	ssl_handle_flag(argc, argv, &flag_ctx, &s_flag_input);
 	if (s_flag_input) {
 		MD5_process((u8 *)s_flag_input, ft_strlen(s_flag_input));
 	}
