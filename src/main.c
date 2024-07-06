@@ -110,21 +110,38 @@ void MD5_hash_file(char *path) {
 	}
 }
 
+void set_stdin_noblock() {
+	s32 stdin_flag = fcntl(0, F_GETFL, 0);
+	if (stdin_flag == -1) {
+		ft_printf_fd(2, "Error: fcntl getFlag for stdin\n");
+		return;
+	}
+	if (fcntl(0, F_SETFL, stdin_flag | O_NONBLOCK) == -1) {
+		ft_printf_fd(2, "Error: fcntl setFlag for stdin\n");
+		return;
+	}
+}
+
 void read_stdin() {
 	u64 size_read = 0;
 	char *content = sstring_read_fd(0, NULL, &size_read);
+	if (size_read == 0) { /* No content */
+		free(content);
+		return;
+	}
 	if (content) {
-		// ft_printf_fd(1, "content: %s -> size %u\n", content, size_read);
+		ft_printf_fd(1, "STDIN content: %s -> size %u\n", content, size_read);
 		MD5_process((u8 *)content, size_read);
 	}
-
 }
 
 int main(int argc, char **argv) {
-	run_test();
+	// run_test();
 
 	t_flag_context flag_ctx = {0};
 
+	set_stdin_noblock();
+	read_stdin();
 
 	char *s_flag_input = NULL;
 	ssl_handle_flag(argc, argv, &flag_ctx, &s_flag_input);
@@ -139,6 +156,5 @@ int main(int argc, char **argv) {
 	MD5_hash_file("ft_ssl");
 
 
-	// read_stdin();
 	return (0);
 }
