@@ -17,6 +17,7 @@
 		"random": "c",
 		"mman.h": "c",
 		"handle_endian.h": "c",
-		"initializer_list": "c"
+		"initializer_list": "c",
+		"stack_string.h": "c"
 	}
 }
