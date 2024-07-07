@@ -5,6 +5,16 @@
 #include "../libft/parse_flag/parse_flag.h"
 
 
+#define SSL_USAGE_STRING "usage: ft_ssl command [flags] [file/string]"
+
+#define SSL_ERROR_STRING "./ft_ssl %s\n\
+ft_ssl: Error: '%s' is an invalid command.\n\n\
+Commands:\n\
+md5\n\
+sha256\n\n\
+Flags:\n\
+-p -q -r -s\n"\
+
 typedef t_flag_context FlagCtx;
 
 typedef struct s_hash_context {

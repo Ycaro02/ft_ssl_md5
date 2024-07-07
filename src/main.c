@@ -88,6 +88,9 @@ int main(int argc, char **argv) {
 	FlagCtx flag_ctx = {0};
 
 	
+	// ft_printf_fd(1, SSL_USAGE_STRING);
+	// ft_printf_fd(1, SSL_ERROR_STRING, "lol", "lol");
+
 	/* set hash algo function need to parse it*/
 	MD5_set_context(&ctx);
 
@@ -122,7 +125,5 @@ int main(int argc, char **argv) {
 	// MD5_hash_file_read("Makefile");
 	// MD5_hash_file_read("src/main.c");
 	// MD5_hash_file("ft_ssl");
-
-
 	return (0);
 }
