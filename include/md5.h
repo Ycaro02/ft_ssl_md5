@@ -55,7 +55,7 @@ FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 #define MD5_SHIFT3	((u32 [4]){ 4, 11, 16, 23 })	/* Round 3 */
 #define MD5_SHIFT4	((u32 [4]){ 6, 10, 15, 21 })	/* Round 4 */
 
-typedef struct s_md5_context {
+typedef struct s_MD5_context {
 	u32		K[64];				/* K constant */
 	u8		*input;				/* Input string */
 	char	*binary_input;		/* Input string in binary */
@@ -73,11 +73,11 @@ typedef struct s_md5_context {
 	u32		B;					/* Buffer B */
 	u32		C;					/* Buffer C */
 	u32		D;					/* Buffer D */
-} MD5_Context;
+} MD5_Ctx;
 
 /* md5.c*/
-void	MD5_process(u8 *input, u64 len);
+void	MD5_hash_str(u8 *input, u64 len);
 void	MD5_hash_file(char *path);
-
+void	MD5_set_context(HashCtx *ctx);
 
 #endif /* HEADER_MD5_H */

@@ -283,9 +283,9 @@ void test_binary_string_to_block_lst() {
 	test_passed(__func__);
 }
 
-// void test_MD5_process() {
-// 	MD5_process((u8 *)"abc", ft_strlen("abc"));
-// 	MD5_process((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
+// void test_MD5_hash_str() {
+// 	MD5_hash_str((u8 *)"abc", ft_strlen("abc"));
+// 	MD5_hash_str((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
 // }
 
 void run_test() {

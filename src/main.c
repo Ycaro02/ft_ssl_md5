@@ -63,7 +63,7 @@ s8 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx, char **input
 		ft_printf_fd(1, "Parse_flag error: %d\n", error);
 		return (FALSE);
 	}
-	display_option_list(*flag_ctx);
+	// display_option_list(*flag_ctx);
 	*input_str = get_opt_value(flag_ctx->opt_lst, flag, S_OPTION);
 	return (TRUE);
 }
@@ -77,28 +77,44 @@ void read_stdin() {
 	}
 	if (content) {
 		ft_printf_fd(1, "STDIN content: %s -> size %u\n", content, size_read);
-		MD5_process((u8 *)content, size_read);
+		MD5_hash_str((u8 *)content, size_read);
 	}
 }
 
 int main(int argc, char **argv) {
 	// run_test();
 
-	t_flag_context flag_ctx = {0};
+	HashCtx ctx = {0};
+	FlagCtx flag_ctx = {0};
 
-	read_stdin();
+	
+	/* set hash algo function need to parse it*/
+	MD5_set_context(&ctx);
 
-	char *s_flag_input = NULL;
-	ssl_handle_flag(argc, argv, &flag_ctx, &s_flag_input);
-	if (s_flag_input) {
-		MD5_process((u8 *)s_flag_input, ft_strlen(s_flag_input));
+	/* Process -p input (read stdin) || no flag provided */
+	// read_stdin();
+
+	/* Process -s input to fill ctx.input_str */
+	ssl_handle_flag(argc, argv, &flag_ctx, &ctx.input_str);
+	ctx.input_strlen = ft_strlen(ctx.input_str);
+	
+	/* process all other args to set input file lst */
+	ft_lstadd_back(&ctx.input_file, ft_lstnew(ft_strdup("ft_ssl")));
+
+
+	if (ctx.input_str) {
+		ctx.hash_str_func((u8 *)ctx.input_str, ctx.input_strlen);
+		// MD5_hash_str((u8 *)s_flag_input, ft_strlen(s_flag_input));
 	}
+	
+	ctx.hash_file_func(ctx.input_file->content);
 
-	// MD5_process((u8 *)"abc", ft_strlen("abc"));
-	// MD5_process((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
+
+	// MD5_hash_str((u8 *)"abc", ft_strlen("abc"));
+	// MD5_hash_str((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
 	// MD5_hash_file_read("Makefile");
 	// MD5_hash_file_read("src/main.c");
-	MD5_hash_file("ft_ssl");
+	// MD5_hash_file("ft_ssl");
 
 
 	return (0);

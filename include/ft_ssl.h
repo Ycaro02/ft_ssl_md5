@@ -2,11 +2,42 @@
 #define HEADER_FT_SSL_H
 
 #include "../libft/libft.h"
+#include "../libft/parse_flag/parse_flag.h"
+
+
+typedef t_flag_context FlagCtx;
+
+typedef struct s_hash_context {
+	FlagCtx			flag_ctx;								/* Flag context */
+	char			*input_str;								/* Input string provided by -s args*/
+	u64				 input_strlen;							/* Input string length */
+	t_list			*input_file;							/* Input file */
+	void 			(*hash_file_func)(char *path);			/* Function to hash file */
+	void 			(*hash_str_func)(u8 *str, u64 len);		/* Function to hash string */
+	u32				*hash;									/* Hash (digest) */	
+	u32				hash_size;								/* Hash size */	
+} HashCtx;
 
 /* binary_utils.c */
 char	*string_to_binary(u8 *str, u64 len);
 u32		binary_string_to_u32(char *binary, u32 size, s8 rev_endian);
 t_list *binary_string_to_block_lst(char *str, u32 block_size, u32 last_block_size);
+
+FT_INLINE void display_hash(u32 *hash, u32 hash_size) {
+    u32 byte = 0;
+	ft_printf_fd(1, ORANGE"Hash: "RESET""YELLOW);
+	
+	for (u32 i = 0; i < hash_size; i++) {
+        for (s32 shift = 24; shift >= 0; shift -= 8) {
+            byte = (hash[i] >> shift) & 0xff;
+			if (byte < 16) {
+				ft_printf_fd(1, "0");
+			}
+			ft_printf_fd(1, "%x", byte);
+		}
+    }
+	ft_printf_fd(1, RESET"\n");
+}
 
 /**
  * @brief Rotate bits to the left

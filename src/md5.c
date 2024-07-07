@@ -34,9 +34,6 @@ void MD5_split_block(char *block, u32 **splited_block, u32 block_idx, u32 max_bl
 }
 
 
-void display_hash(MD5_Context *c) {
-	ft_printf_fd(1, ORANGE"%x%x%x%x\n"RESET, SWAP_BYTE_32(c->A), SWAP_BYTE_32(c->B), SWAP_BYTE_32(c->C), SWAP_BYTE_32(c->D));
-}
 
 
 /**
@@ -57,7 +54,7 @@ void MD5_K_get(u32 K[MD5_NB_ITERATION]) {
  * @param c MD5 context to initialize
  * @param input input string to hash (in ascii)
  */
-void MD5_init(MD5_Context *c, u8 *input, u64 input_size) {
+void MD5_init(MD5_Ctx *c, u8 *input, u64 input_size) {
 	u32 i = 0;
 
 	c->input = input;
@@ -90,7 +87,7 @@ void MD5_init(MD5_Context *c, u8 *input, u64 input_size) {
 
 }
 
-void MD5_context_free(MD5_Context *c) {
+void MD5_Ctx_free(MD5_Ctx *c) {
 	ft_lstclear(&c->block_list, free);
 	for (u32 i = 0; i < c->list_size; i++) {
 		free(c->splited_block[i]);
@@ -105,7 +102,7 @@ static inline u32 MD5_rounds_compute(u32 a, u32 func_compute, u32 k_add_m, u32 s
 	return (ROTATE_LEFT((a + func_compute + k_add_m), s));
 }
 
-static void MD5_swap_compute(MD5_Context *ctx, u32 compute) {
+static void MD5_swap_compute(MD5_Ctx *ctx, u32 compute) {
 	u32 tmp = ctx->D;
 
 	ctx->D = ctx->C;
@@ -115,7 +112,7 @@ static void MD5_swap_compute(MD5_Context *ctx, u32 compute) {
 
 }
 
-void MD5_block_compute(MD5_Context *ctx, u32 block_idx) {
+void MD5_block_compute(MD5_Ctx *ctx, u32 block_idx) {
 	u32 *M = ctx->splited_block[block_idx];
 	u32 compute, m_idx, a, b, c, d;
 
@@ -148,16 +145,19 @@ void MD5_block_compute(MD5_Context *ctx, u32 block_idx) {
 }
 
 
+void MD5_fill_hash(u32 *hash, MD5_Ctx *c) {
+	hash[0] = SWAP_BYTE_32(c->A);
+	hash[1] = SWAP_BYTE_32(c->B);
+	hash[2] = SWAP_BYTE_32(c->C);
+	hash[3] = SWAP_BYTE_32(c->D);
+}
 
 /**
  * @brief Process the MD5 algorithm
  * @param input input string to hash
- * TODO: Implement the MD5 algorithm
- * We need to parse input before this func to give size, particulary for the file case
- * they can contain \0 and we need to know the size of the file (data to read)
  */
-void MD5_process(u8 *input, u64 input_size) {
-	MD5_Context c = {0};
+void MD5_hash_str(u8 *input, u64 input_size) {
+	MD5_Ctx c = {0};
 	t_list		*current = NULL;
 	u32			i = 0;
 
@@ -173,9 +173,17 @@ void MD5_process(u8 *input, u64 input_size) {
 		i++;
 		current = current->next;
 	}
-	display_hash(&c);
 
-	MD5_context_free(&c);
+	u32 *hash = malloc(sizeof(u32) * 4);
+	if (!hash) {
+		ft_printf_fd(2, "Error: MD5_hash_str: malloc failed\n");
+		return;
+	}
+	MD5_fill_hash(hash, &c);
+
+	display_hash(hash, 4);
+
+	MD5_Ctx_free(&c);
 }
 
 /**
@@ -188,11 +196,17 @@ void MD5_hash_file(char *path) {
 
 	if (file_map) {
 		ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
-		MD5_process((u8 *)file_map, file_size);
+		MD5_hash_str((u8 *)file_map, file_size);
 		free(file_map);
 	}
 }
 
+
+void MD5_set_context(HashCtx *ctx) {
+	ctx->hash_file_func = MD5_hash_file;
+	ctx->hash_str_func = MD5_hash_str;
+	ctx->hash_size = 4;
+}
 
 // To remove
 
@@ -240,7 +254,7 @@ void MD5_hash_file(char *path) {
 // }
 // if (map) {
 // 	ft_printf_fd(1, YELLOW"mmap load File %s size: %u\n"RESET, path, file_size);
-// 	MD5_process(map, file_size);
+// 	MD5_hash_str(map, file_size);
 // 	munmap(map, map_file_size);
 // }
 // end to remove

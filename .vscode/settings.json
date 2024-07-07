@@ -18,6 +18,7 @@
 		"mman.h": "c",
 		"handle_endian.h": "c",
 		"initializer_list": "c",
-		"stack_string.h": "c"
+		"stack_string.h": "c",
+		"md5.h": "c"
 	}
 }
