@@ -98,8 +98,15 @@ int main(int argc, char **argv) {
 	ssl_handle_flag(argc, argv, &flag_ctx, &ctx.input_str);
 	ctx.input_strlen = ft_strlen(ctx.input_str);
 	
+
+	/* Extract file args in t_list */
+	// ctx.input_file = extract_args(argc, argv);
+	// for (t_list *tmp = ctx.input_file; tmp; tmp = tmp->next) {
+	// 	ft_printf_fd(1, "File: %s\n", (char *)tmp->content);
+	// }
+
 	/* process all other args to set input file lst */
-	ft_lstadd_back(&ctx.input_file, ft_lstnew(ft_strdup("ft_ssl")));
+	ft_lstadd_front(&ctx.input_file, ft_lstnew(ft_strdup("ft_ssl")));
 
 
 	if (ctx.input_str) {
