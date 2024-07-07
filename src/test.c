@@ -1,5 +1,7 @@
 #include "../include/ssl_test.h"
 #include "../include/ft_ssl.h"
+#include "../include/md5.h"
+
 
 void test_atoi_base() {
 	assert(ft_atoi_base("101", "01") == 5);
@@ -218,7 +220,7 @@ void verify_length(char *block_content, u64 block_len, u64 base_len) {
  * @param expected_block_count expected block count
 */
 void check_binary_blocks(char *input_str, int expected_block_count) {
-    t_list *binary_list = binary_string_to_block_lst(input_str);
+    t_list *binary_list = binary_string_to_block_lst(input_str, MD5_BLOCK_SIZE, MD5_LAST_BLOCK_SIZE);
     int block_count = ft_lstsize(binary_list);
     assert(block_count == expected_block_count);
 

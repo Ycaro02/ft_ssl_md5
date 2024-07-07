@@ -1,5 +1,6 @@
 #include <math.h>
 #include "../include/ft_ssl.h"
+#include "../include/md5.h"
 #include "../include/handle_endian.h"
 
 /**
@@ -9,10 +10,9 @@
  * @param block_idx block index
  */
 void MD5_split_block(char *block, u32 **splited_block, u32 block_idx, u32 max_block) {
-	u32 i = 0;
-	u32 j = 0;
+	u32 i = 0, j = 0, last_word = MD5_NB_WORD - 1;
 
-	while (j < 16) {
+	while (j < MD5_NB_WORD) {
 		/* Convert binary string in u32 and inverse endian ( little to big )*/
 		splited_block[block_idx][j] = binary_string_to_u32(block + i, 32, TRUE);
 		i += 32;
@@ -21,11 +21,11 @@ void MD5_split_block(char *block, u32 **splited_block, u32 block_idx, u32 max_bl
 
 	/* Handle special case for the len in the last block */
 	if (block_idx == max_block -1) {
-		u64 tmp = splited_block[block_idx][15] + splited_block[block_idx][14];
+		u64 tmp = splited_block[block_idx][last_word] + splited_block[block_idx][last_word - 1];
 		/* Restore len in little endian and update 2 last word in consequence */
 		tmp = SWAP_BYTE_64(tmp);
-		splited_block[block_idx][14] = tmp >> 32;
-		splited_block[block_idx][15] = tmp << 32;
+		splited_block[block_idx][last_word - 1] = tmp >> 32;
+		splited_block[block_idx][last_word] = tmp << 32;
 	}
 
 	// for (u32 i = 0; i < 16; i++) {
@@ -35,8 +35,6 @@ void MD5_split_block(char *block, u32 **splited_block, u32 block_idx, u32 max_bl
 
 
 void display_hash(MD5_Context *c) {
-	// printf("Brut display %08x%08x%08x%08x\n", c->A, c->B, c->C, c->D);
-	// ft_printf_fd(1, YELLOW"Hash"RESET""PINK" (\"%s\") "RESET"\n", c->input);
 	ft_printf_fd(1, ORANGE"%x%x%x%x\n"RESET, SWAP_BYTE_32(c->A), SWAP_BYTE_32(c->B), SWAP_BYTE_32(c->C), SWAP_BYTE_32(c->D));
 }
 
@@ -45,10 +43,10 @@ void display_hash(MD5_Context *c) {
  * @brief Compute K constant
  * @param K K constant to fill
  */
-void MD5_K_get(u32 K[64]) {
+void MD5_K_get(u32 K[MD5_NB_ITERATION]) {
 	s32 i = 0;
 
-	while (i < 64) {
+	while (i < MD5_NB_ITERATION) {
 		K[i] = floor(fabs(sin(i + 1)) * (1UL << 32U));
 		i++;
 	}
@@ -70,7 +68,7 @@ void MD5_init(MD5_Context *c, u8 *input, u64 input_size) {
 	
 	
 	c->binary_input = string_to_binary(input, c->input_size);
-	c->block_list = binary_string_to_block_lst(c->binary_input);
+	c->block_list = binary_string_to_block_lst(c->binary_input, MD5_BLOCK_SIZE, MD5_LAST_BLOCK_SIZE);
 	c->list_size = ft_lstsize(c->block_list);
 	c->splited_block = malloc(sizeof(u32 *) * c->list_size);
 	if (!c->splited_block) {
@@ -81,7 +79,7 @@ void MD5_init(MD5_Context *c, u8 *input, u64 input_size) {
 	MD5_K_get(c->K);
 
 	while (i < c->list_size) {
-		c->splited_block[i] = malloc(sizeof(u32) * 16);
+		c->splited_block[i] = malloc(sizeof(u32) * MD5_NB_WORD);
 		i++;
 	}
 
@@ -126,9 +124,8 @@ void MD5_block_compute(MD5_Context *ctx, u32 block_idx) {
 	c = ctx->C;
 	d = ctx->D;
 
-	// ft_printf_fd("a=%x, b=%x, c=%x, d=%x\n", a,b,c,d);
 
-	for (s32 i = 0; i < 64; i++) {
+	for (s32 i = 0; i < MD5_NB_ITERATION; i++) {
 		if (i < 16) {
 			m_idx = i;
 			compute = MD5_rounds_compute(ctx->A, func_f(ctx->B, ctx->C, ctx->D), (ctx->K[i] + M[m_idx]), MD5_SHIFT1[i % 4]);
@@ -185,12 +182,65 @@ void MD5_process(u8 *input, u64 input_size) {
  * @brief Hash a file with MD5 algorithm
  * @param path file path
 */
-// void MD5_hash_file(char *path) {
-// 	u64 file_size = 0;
-// 	u8 *file_map = mmap_file(path, &file_size, 0);
-// 	if (file_map) {
-// 		ft_printf_fd(1, YELLOW"File %s size: %u\n"RESET, path, file_size);
-// 		MD5_process(file_map, file_size);
-// 		munmap(file_map, file_size);
-// 	}
+void MD5_hash_file(char *path) {
+	u64		file_size = 0;
+	char	*file_map = sstring_read_fd(-1, path, &file_size);
+
+	if (file_map) {
+		ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
+		MD5_process((u8 *)file_map, file_size);
+		free(file_map);
+	}
+}
+
+
+// To remove
+
+/* Used for load file easier than read and multiple alloc */
+// #include <sys/mman.h>
+// #include <sys/stat.h>
+
+// FT_INLINE u8 *mmap_file(char *path, u64 *file_size, u32 min_size)
+// {
+//     struct stat	st;
+// 	void		*map;
+//     int			fd = open(path, O_RDONLY);
+
+//     if (fd == -1) {
+//         ft_printf_fd(2, "Failed to open file %s\n", path);
+//         return (NULL);
+//     }
+
+//     ft_bzero(&st, sizeof(st));
+//     fstat(fd, &st);
+//     *file_size = st.st_size;
+
+//     if (*file_size <= min_size) {
+//         close(fd);
+//         ft_printf_fd(2, "File %s is empty\n", path);
+//         return (NULL);
+//     }
+
+//     map = mmap(0, *file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+//     if (map == MAP_FAILED) {
+//         close(fd);
+//         ft_printf_fd(2, "Failed to open file %s\n", path);
+//         return (NULL);
+//     }
+//     return (map);
 // }
+
+// u8		*map = mmap_file(path, &file_size, 0);
+// u64 	map_file_size = 0;
+// if (cmp_large_str((u8 *)file_map, map, map_file_size) == 0) {
+// 	ft_printf_fd(1, GREEN"Same %s size: %u\n"RESET, path, file_size);
+// } else {
+// 	ft_printf_fd(1, RED"Not Same %s size: %u\n"RESET, path, file_size);
+// }
+// if (map) {
+// 	ft_printf_fd(1, YELLOW"mmap load File %s size: %u\n"RESET, path, file_size);
+// 	MD5_process(map, file_size);
+// 	munmap(map, map_file_size);
+// }
+// end to remove

@@ -4,6 +4,10 @@
 #include <assert.h>
 #include "../libft/libft.h"
 
+
+/* atoi_base.c */
+int		ft_atoi_base(char *str, char *base);
+
 /* test.c */
 void	test_char_to_binary();
 void	test_atoi_base();

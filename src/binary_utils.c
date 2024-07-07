@@ -65,12 +65,12 @@ char *get_padding_str(u32 size, s8 need_padding_1) {
  * @param last_block if it's the last block
  * @return allocated char *str with padding if needed
 */
-char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 need_padding_1) {
+char *build_binary_block(char *input_string, u64 base_len, u32 block_size, u32 last_block_size, s8 last_block, s8 need_padding_1) {
 	
 	/* If it's the last block adapt block_size  */
-	u32		block_size = last_block ? (MD5_LAST_BLOCK_SIZE + 1U) : MD5_BLOCK_SIZE; 
-	u32		mod = ft_strlen(input_string) % block_size;
-	u32		to_add = mod == 0 ? 0 : block_size - mod;
+	u32		size = last_block ? (last_block_size + 1U) : block_size; 
+	u32		mod = ft_strlen(input_string) % size;
+	u32		to_add = mod == 0 ? 0 : size - mod;
 	char	*block_str = NULL, *padding = NULL, *len_str = NULL;
 
 	if (mod != 0 || last_block) {
@@ -101,7 +101,7 @@ char *build_binary_block(char *input_string, u64 base_len, s8 last_block, s8 nee
  * @param str string to convert (in binary format)
  * @return t_list * list of binary block string
 */
-t_list *binary_string_to_block_lst(char *str) {
+t_list *binary_string_to_block_lst(char *str, u32 block_size, u32 last_block_size) {
 	t_list	*binary_list = NULL, *block = NULL;
 	char	*binary_str = NULL, *padding = NULL;
 	u64		base_len = ft_strlen(str), tmp_len = 0;
@@ -113,37 +113,37 @@ t_list *binary_string_to_block_lst(char *str) {
 
 	while (!is_last_block) {
 		tmp_len = base_len - i;
-		is_last_block = tmp_len <= (MD5_LAST_BLOCK_SIZE) ? TRUE : FALSE;
+		is_last_block = tmp_len <= (last_block_size) ? TRUE : FALSE;
 
 		/* Check if we are in special case and adapt bool logic */
 		if (next_is_last) {
 			is_last_block = TRUE;
-		} else if (tmp_len > MD5_LAST_BLOCK_SIZE && tmp_len <= MD5_BLOCK_SIZE) {
+		} else if (tmp_len > last_block_size && tmp_len <= block_size) {
 			// ft_printf_fd(1, RED"Block not full need ADAPT: \n"RESET);
 			next_is_last = TRUE;
-			if (tmp_len == MD5_BLOCK_SIZE) { need_padding_1 = TRUE; }
+			if (tmp_len == block_size) { need_padding_1 = TRUE; }
 		}
 
 		trunc_needed = (!is_last_block && !next_is_last);
 		/* Trunc string if we are not the last block and we have enought data (not next is last) */
 		if (trunc_needed) {
-			save_char = str[i + MD5_BLOCK_SIZE];
-			str[i + MD5_BLOCK_SIZE] = '\0';
+			save_char = str[i + block_size];
+			str[i + block_size] = '\0';
 		}
 
 		/* If we are the last block and we need special padding (next is last == true) */
 		if (is_last_block && next_is_last) {
-			padding = get_padding_str(MD5_LAST_BLOCK_SIZE, need_padding_1);
-			binary_str = build_binary_block(padding, base_len, is_last_block, FALSE);
+			padding = get_padding_str(last_block_size, need_padding_1);
+			binary_str = build_binary_block(padding, base_len, block_size, last_block_size, is_last_block, FALSE);
 			free(padding);
 		} else { /* Classic build */
-			binary_str = build_binary_block(str + i, base_len, is_last_block, TRUE);
-			if (trunc_needed) { str[i + MD5_BLOCK_SIZE] = save_char; }
+			binary_str = build_binary_block(str + i, base_len, block_size, last_block_size, is_last_block, TRUE);
+			if (trunc_needed) { str[i + block_size] = save_char; }
 		}
 
 		block = ft_lstnew(binary_str);
 		ft_lstadd_back(&binary_list, block);
-		i += MD5_BLOCK_SIZE;
+		i += block_size;
 	}
 	return (binary_list);
 }

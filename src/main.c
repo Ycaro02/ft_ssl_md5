@@ -1,9 +1,12 @@
 #include "../include/ft_ssl.h"
 #include "../include/ssl_test.h"
-
 #include "../libft/parse_flag/parse_flag.h"
 
+#include "../include/md5.h"
+
+
 /*
+	Read stdin if no argument is given or if -p flag is set
 	-p, echo STDIN to STDOUT and append the checksum to STDOUT
 	-q, quiet mode
 	-r, reverse the format of the output.
@@ -60,66 +63,9 @@ s8 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx, char **input
 		ft_printf_fd(1, "Parse_flag error: %d\n", error);
 		return (FALSE);
 	}
-	(void)flag;
-
 	display_option_list(*flag_ctx);
-
 	*input_str = get_opt_value(flag_ctx->opt_lst, flag, S_OPTION);
-
 	return (TRUE);
-}
-
-int cmp_large_str(u8 *s1, u8 *s2, u64 size) {
-	for (u64 i = 0; i < size; i++) {
-		if (s1[i] != s2[i]) {
-			return (1);
-		}
-	}
-	return (0);
-}
-
-/**
- * @brief Hash a file with MD5 algorithm
- * @param path file path
-*/
-void MD5_hash_file(char *path) {
-	u64		file_size = 0;
-	char	*file_map = sstring_read_fd(-1, path, &file_size);
-	
-	
-
-	// To remove
-	u8		*map = mmap_file(path, &file_size, 0);
-	u64 	map_file_size = 0;
-	if (cmp_large_str((u8 *)file_map, map, map_file_size) == 0) {
-		ft_printf_fd(1, GREEN"Same %s size: %u\n"RESET, path, file_size);
-	} else {
-		ft_printf_fd(1, RED"Not Same %s size: %u\n"RESET, path, file_size);
-	}
-	if (map) {
-		ft_printf_fd(1, YELLOW"mmap load File %s size: %u\n"RESET, path, file_size);
-		MD5_process(map, file_size);
-		munmap(map, map_file_size);
-	}
-	// end to remove
-
-	if (file_map) {
-		ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
-		MD5_process((u8 *)file_map, file_size);
-		free(file_map);
-	}
-}
-
-void set_stdin_noblock() {
-	s32 stdin_flag = fcntl(0, F_GETFL, 0);
-	if (stdin_flag == -1) {
-		ft_printf_fd(2, "Error: fcntl getFlag for stdin\n");
-		return;
-	}
-	if (fcntl(0, F_SETFL, stdin_flag | O_NONBLOCK) == -1) {
-		ft_printf_fd(2, "Error: fcntl setFlag for stdin\n");
-		return;
-	}
 }
 
 void read_stdin() {
@@ -140,7 +86,6 @@ int main(int argc, char **argv) {
 
 	t_flag_context flag_ctx = {0};
 
-	set_stdin_noblock();
 	read_stdin();
 
 	char *s_flag_input = NULL;
