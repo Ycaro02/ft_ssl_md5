@@ -189,10 +189,10 @@ s8 MD5_hash_file(HashCtx *ctx, char *path) {
 	char	*file_map = sstring_read_fd(-1, path, &file_size);
 
 	if (!file_map) {
-		ft_printf_fd(1, "ft_ssl: md5: %s No such file or directory\n", path);
+		ft_printf_fd(1, "ft_ssl: md5: %s: No such file or directory\n", path);
 		return (FALSE);
 	}
-	ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
+	// ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
 	MD5_hash_str(ctx, (u8 *)file_map, file_size);
 	free(file_map);
 	return (TRUE);

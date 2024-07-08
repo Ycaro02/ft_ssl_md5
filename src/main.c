@@ -62,7 +62,7 @@ s32 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
 		ft_printf_fd(1, "Parse_flag error: %d\n", error);
 		return (-1);
 	}
-	display_option_list(*flag_ctx);
+	// display_option_list(*flag_ctx);
 	return (flag);
 }
 
@@ -99,6 +99,134 @@ void free_hash_context(HashCtx *ctx) {
 	free(ctx->hash);
 
 }
+
+
+void display_prefix(HashCtx *ctx, char *str , char *path, s8 is_stdin) {
+	
+	if (is_stdin && !has_flag(ctx->flag_val, Q_OPTION)) {
+		if (!has_flag(ctx->flag_val, P_OPTION)) {
+			ft_printf_fd(1, "(stdin)= ");
+		} else {
+			ft_printf_fd(1, "(\"%s\")= ", str);
+		}
+		return ;
+	}
+	/* Classic display */
+	if (!has_flag(ctx->flag_val, Q_OPTION) && !has_flag(ctx->flag_val, R_OPTION)) {
+		if (str && !is_stdin) {
+			ft_printf_fd(1, "%s (\"%s\") = ", ctx->algo_name, str);
+		} else if (!str) { /* File case */
+			ft_printf_fd(1, "%s (%s) = ", ctx->algo_name, path);
+		}
+	}
+}
+
+void display_suffix(HashCtx *ctx, char *str , char *path, s8 is_stdin) {
+	/* Reverse display (display info data after hash)*/
+	if (!has_flag(ctx->flag_val, Q_OPTION) && has_flag(ctx->flag_val, R_OPTION) && !is_stdin) {
+		if (str) {
+			ft_printf_fd(1, " \"%s\"\n", str);
+		} else {
+			ft_printf_fd(1, " %s\n", path);
+		}
+	} else {
+		ft_printf_fd(1, "\n");
+	}
+}
+
+void hash_process(HashCtx *ctx, char *path, char *str, s8 is_stdin) {
+	
+	if (str) {
+		ctx->hash_str_func(ctx, (u8 *)str, ft_strlen(str));
+	} else {
+		if (ctx->hash_file_func(ctx, path) == FALSE) {
+			return;
+		}
+	}
+
+	/* Cut last \n if is stdin */
+	if (is_stdin) {
+		int len = ft_strlen(str);
+		if (len > 0 && str[len - 1] == '\n') {
+			str[len - 1] = '\0';
+		}
+		/* Quiet mode with stdin (-P) */
+		if (has_flag(ctx->flag_val, Q_OPTION) && has_flag(ctx->flag_val, P_OPTION)) {
+			ft_printf_fd(1, "%s\n", str);
+		}
+	}
+
+	display_prefix(ctx, str, path, is_stdin);
+	
+	/* Display hash */
+	display_hash(ctx->hash, ctx->hash_size);
+	
+	display_suffix(ctx, str, path, is_stdin);
+
+}
+
+
+void read_stdin(HashCtx *ctx) {
+	u64 size_read = 0;
+	char *content = sstring_read_fd(0, NULL, &size_read);
+	if (size_read == 0) { /* No content */
+		free(content);
+		return;
+	}
+	if (content) {
+		ctx->stdin_str = ft_strdup(content);
+		ctx->stdin_strlen = ft_strlen(content);
+		hash_process(ctx, NULL, ctx->stdin_str, TRUE);
+	}
+}
+
+
+int main(int argc, char **argv) {
+	// run_test();
+
+	/* Init hash context used to handle different hash algo */
+	HashCtx ctx = {0};
+
+	if (handle_hash_algo(argc, argv, &ctx) != 0) {
+		return (1);
+	}
+	ctx.flag_val = ssl_handle_flag(argc, argv, &ctx.flag_ctx);
+	
+
+	/* Process -s input */
+	if (has_flag(ctx.flag_val, S_OPTION)) {
+		ctx.input_str = get_opt_value(ctx.flag_ctx.opt_lst, ctx.flag_val, S_OPTION);
+	}
+	
+	/* Extract file args in t_list */
+	ctx.input_file = extract_args(argc, argv);
+	
+	s32 lst_size = ft_lstsize(ctx.input_file);
+	
+	/* Read stdin if no argument is given or if -p ctx.flag_val is set */
+	if ((lst_size == 0 && ctx.input_str == NULL)|| has_flag(ctx.flag_val, P_OPTION)) {
+		read_stdin(&ctx);
+	}
+
+	if (ctx.input_str) {
+		hash_process(&ctx, NULL, ctx.input_str, FALSE);
+	}
+
+
+	/* process all file args */
+	for (t_list *tmp = ctx.input_file; tmp; tmp = tmp->next) {
+		hash_process(&ctx, (char *)tmp->content, NULL, FALSE);
+		// ctx.hash_file_func(&ctx, (char *)tmp->content);
+	}
+
+	free_hash_context(&ctx);
+	return (0);
+}
+
+
+
+/*
+String utils:
 
 char *str_join_char(char *str, char c, char c2) {
 	char *ret = NULL;
@@ -138,6 +266,7 @@ char *str_push_char_free(char *str, char c) {
 	free(str);
 	return (ret);
 }
+*/
 
 // typedef struct s_contex_info {
 // 	char *prefix;
@@ -195,108 +324,3 @@ char *str_push_char_free(char *str, char c) {
 // 	free(braces_quote_str);
 // 	return (info);
 // }
-
-void hash_process(HashCtx *ctx, char *path, char *str, s8 is_stdin) {
-	
-	if (str) {
-		ctx->hash_str_func(ctx, (u8 *)str, ft_strlen(str));
-	} else {
-		if (ctx->hash_file_func(ctx, path) == FALSE) {
-			return;
-		}
-	}
-
-	/* Cut last \n if is stdin */
-	if (is_stdin) {
-		int len = ft_strlen(str);
-		if (len > 0 && str[len - 1] == '\n') {
-			str[len - 1] = '\0';
-		}
-		/* Quiet mode with stdin (-P) */
-		if (has_flag(ctx->flag_val, Q_OPTION)) {
-			ft_printf_fd(1, "%s\n", str);
-		}
-	}
-
-	// ContextInfo *info = handle_contextual_info(ctx->algo_name, str, path, is_stdin, ctx->flag_val);
-
-	/* Classic display */
-	if (!has_flag(ctx->flag_val, Q_OPTION) && !has_flag(ctx->flag_val, R_OPTION)) {
-		if (str && !is_stdin) {
-			ft_printf_fd(1, "%s (\"%s\") = ", ctx->algo_name, str);
-		} else if (str && is_stdin) {
-			ft_printf_fd(1, "(\"%s\") = ", str);
-		} else {
-			ft_printf_fd(1, "%s (%s) = ", ctx->algo_name, path);
-		}
-	}
-
-	// ft_printf_fd(1, "%s", info->prefix);
-	/* Display hash */
-	display_hash(ctx->hash, ctx->hash_size);
-	// ft_printf_fd(1, "%s", info->suffix);
-
-	// free(info->prefix);
-	// free(info->suffix);
-
-	/* Reverse display (display info data after hash)*/
-	if (!has_flag(ctx->flag_val, Q_OPTION) && has_flag(ctx->flag_val, R_OPTION)) {
-		if (str) {
-			ft_printf_fd(1, " \"%s\"\n", str);
-		} else {
-			ft_printf_fd(1, " %s\n", path);
-		}
-	} else {
-		ft_printf_fd(1, "\n");
-	}
-}
-
-
-void read_stdin(HashCtx *ctx) {
-	u64 size_read = 0;
-	char *content = sstring_read_fd(0, NULL, &size_read);
-	if (size_read == 0) { /* No content */
-		free(content);
-		return;
-	}
-	if (content) {
-		ctx->stdin_str = ft_strdup(content);
-		ctx->stdin_strlen = ft_strlen(content);
-		hash_process(ctx, NULL, ctx->stdin_str, TRUE);
-	}
-}
-
-
-int main(int argc, char **argv) {
-	// run_test();
-
-	/* Init hash context used to handle different hash algo */
-	HashCtx ctx = {0};
-
-	if (handle_hash_algo(argc, argv, &ctx) != 0) {
-		return (1);
-	}
-	ctx.flag_val = ssl_handle_flag(argc, argv, &ctx.flag_ctx);
-	
-	/* Read stdin if no argument is given or if -p ctx.flag_val is set */
-	if (ctx.flag_val == 0 || has_flag(ctx.flag_val, P_OPTION)) {
-		read_stdin(&ctx);
-	}
-	/* Process -s input */
-	if (has_flag(ctx.flag_val, S_OPTION)) {
-		ctx.input_str = get_opt_value(ctx.flag_ctx.opt_lst, ctx.flag_val, S_OPTION);
-		hash_process(&ctx, NULL, ctx.input_str, FALSE);
-	}
-	
-	/* Extract file args in t_list */
-	ctx.input_file = extract_args(argc, argv);
-
-	/* process all file args */
-	for (t_list *tmp = ctx.input_file; tmp; tmp = tmp->next) {
-		hash_process(&ctx, (char *)tmp->content, NULL, FALSE);
-		// ctx.hash_file_func(&ctx, (char *)tmp->content);
-	}
-
-	free_hash_context(&ctx);
-	return (0);
-}

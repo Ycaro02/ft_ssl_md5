@@ -41,7 +41,8 @@ t_list *binary_string_to_block_lst(char *str, u32 block_size, u32 last_block_siz
 
 FT_INLINE void display_hash(u32 *hash, u32 hash_size) {
     u32 byte = 0;
-	ft_printf_fd(1, ORANGE"Hash: "RESET""YELLOW);
+	// ft_printf_fd(1, ORANGE"Hash: "RESET""YELLOW);
+	// ft_printf_fd(1, YELLOW);
 	
 	for (u32 i = 0; i < hash_size; i++) {
         for (s32 shift = 24; shift >= 0; shift -= 8) {
@@ -52,7 +53,7 @@ FT_INLINE void display_hash(u32 *hash, u32 hash_size) {
 			ft_printf_fd(1, "%x", byte);
 		}
     }
-	ft_printf_fd(1, RESET);
+	// ft_printf_fd(1, RESET);
 }
 
 /**
