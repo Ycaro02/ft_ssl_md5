@@ -77,7 +77,6 @@ typedef struct s_MD5_context {
 
 /* md5.c*/
 void	MD5_hash_str(HashCtx *ctx, u8 *str, u64 len);
-void	MD5_hash_file(HashCtx *ctx, char *path);
+s8		MD5_hash_file(HashCtx *ctx, char *path);
 void	MD5_set_context(HashCtx *ctx);
-
 #endif /* HEADER_MD5_H */

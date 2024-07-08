@@ -71,20 +71,6 @@ s32 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
 	return (flag);
 }
 
-void read_stdin(HashCtx *ctx) {
-	u64 size_read = 0;
-	char *content = sstring_read_fd(0, NULL, &size_read);
-	if (size_read == 0) { /* No content */
-		free(content);
-		return;
-	}
-	if (content) {
-		ctx->stdin_str = ft_strdup(content);
-		ctx->stdin_strlen = ft_strlen(content);
-		ctx->hash_str_func(ctx, (u8 *)ctx->stdin_str, ctx->stdin_strlen);
-	}
-}
-
 s32 handle_hash_algo(int argc, char **argv, HashCtx *ctx) {
 	if (argc < 2) {
 		ft_printf_fd(1, SSL_USAGE_STRING);
@@ -119,36 +105,96 @@ void free_hash_context(HashCtx *ctx) {
 
 }
 
+
+void hash_process(HashCtx *ctx, char *path, char *str, s8 is_stdin) {
+	if (str) {
+		ctx->hash_str_func(ctx, (u8 *)str, ft_strlen(str));
+	} else {
+		if (ctx->hash_file_func(ctx, path) == FALSE) {
+			return;
+		}
+	}
+
+	if (is_stdin) {
+		int len = ft_strlen(str);
+		if (len > 0 && str[len - 1] == '\n') {
+			str[len - 1] = '\0';
+		}
+		if (has_flag(ctx->flag_val, Q_OPTION)) {
+			ft_printf_fd(1, "%s\n", str);
+		}
+	}
+
+	if (!has_flag(ctx->flag_val, Q_OPTION) && !has_flag(ctx->flag_val, R_OPTION)) {
+		if (str && !is_stdin) {
+			ft_printf_fd(1, "%s (\"%s\") = ", ctx->algo_name, str);
+		} else if (str && is_stdin) {
+
+			ft_printf_fd(1, "(\"%s\") = ", str);
+		} else {
+			ft_printf_fd(1, "%s (%s) = ", ctx->algo_name, path);
+		}
+	}
+	display_hash(ctx->hash, ctx->hash_size);
+	if (!has_flag(ctx->flag_val, Q_OPTION) && has_flag(ctx->flag_val, R_OPTION)) {
+		if (str) {
+			ft_printf_fd(1, " \"%s\"\n", str);
+		} else {
+			ft_printf_fd(1, " %s\n", path);
+		}
+	} else {
+		ft_printf_fd(1, "\n");
+	}
+}
+
+
+void read_stdin(HashCtx *ctx) {
+	u64 size_read = 0;
+	char *content = sstring_read_fd(0, NULL, &size_read);
+	if (size_read == 0) { /* No content */
+		free(content);
+		return;
+	}
+	if (content) {
+		ctx->stdin_str = ft_strdup(content);
+		ctx->stdin_strlen = ft_strlen(content);
+		hash_process(ctx, NULL, ctx->stdin_str, TRUE);
+		// ctx->hash_str_func(ctx, (u8 *)ctx->stdin_str, ctx->stdin_strlen);
+	}
+}
+
+
 int main(int argc, char **argv) {
 	// run_test();
 
 	/* Init hash context used to handle different hash algo */
 	HashCtx ctx = {0};
-	s32		flag = 0;
 
 	if (handle_hash_algo(argc, argv, &ctx) != 0) {
 		return (1);
 	}
-	flag = ssl_handle_flag(argc, argv, &ctx.flag_ctx);
+	ctx.flag_val = ssl_handle_flag(argc, argv, &ctx.flag_ctx);
 	
-	/* Read stdin if no argument is given or if -p flag is set */
-	if (flag == 0 || has_flag(flag, P_OPTION)) {
+	/* Read stdin if no argument is given or if -p ctx.flag_val is set */
+	if (ctx.flag_val == 0 || has_flag(ctx.flag_val, P_OPTION)) {
 		read_stdin(&ctx);
 	}
 	/* Process -s input */
-	if (has_flag(flag, S_OPTION)) {
-		ctx.input_str = get_opt_value(ctx.flag_ctx.opt_lst, flag, S_OPTION);
-		ctx.input_strlen = ft_strlen(ctx.input_str);
-		ctx.hash_str_func(&ctx, (u8 *)ctx.input_str, ctx.input_strlen);
+	if (has_flag(ctx.flag_val, S_OPTION)) {
+		ctx.input_str = get_opt_value(ctx.flag_ctx.opt_lst, ctx.flag_val, S_OPTION);
+		hash_process(&ctx, NULL, ctx.input_str, FALSE);
+		// ctx.input_strlen = ft_strlen(ctx.input_str);
+		// ctx.hash_str_func(&ctx, (u8 *)ctx.input_str, ctx.input_strlen);
 	}
 	
 	/* Extract file args in t_list */
 	ctx.input_file = extract_args(argc, argv);
 	/* process all other args to set input file lst */
-	ft_lstadd_front(&ctx.input_file, ft_lstnew(ft_strdup("ft_ssl")));
+	// ft_lstadd_front(&ctx.input_file, ft_lstnew(ft_strdup("ft_ssl")));
 
 	for (t_list *tmp = ctx.input_file; tmp; tmp = tmp->next) {
-		ctx.hash_file_func(&ctx, (char *)tmp->content);
+		hash_process(&ctx, (char *)tmp->content, NULL, FALSE);
+		// ctx.hash_file_func(&ctx, (char *)tmp->content);
 	}
 
 	free_hash_context(&ctx);

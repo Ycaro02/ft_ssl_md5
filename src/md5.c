@@ -175,7 +175,7 @@ void MD5_hash_str(HashCtx *ctx, u8 *str, u64 len) {
 	}
 
 	MD5_fill_hash(ctx->hash, &c);
-	display_hash(ctx->hash, 4);
+	// display_hash(ctx->hash, 4);
 
 	MD5_Ctx_free(&c);
 }
@@ -184,17 +184,18 @@ void MD5_hash_str(HashCtx *ctx, u8 *str, u64 len) {
  * @brief Hash a file with MD5 algorithm
  * @param path file path
 */
-void MD5_hash_file(HashCtx *ctx, char *path) {
+s8 MD5_hash_file(HashCtx *ctx, char *path) {
 	u64		file_size = 0;
 	char	*file_map = sstring_read_fd(-1, path, &file_size);
 
 	if (!file_map) {
 		ft_printf_fd(1, "ft_ssl: md5: %s No such file or directory\n", path);
-		return;
+		return (FALSE);
 	}
 	ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
 	MD5_hash_str(ctx, (u8 *)file_map, file_size);
 	free(file_map);
+	return (TRUE);
 }
 
 

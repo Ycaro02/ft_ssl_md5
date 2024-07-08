@@ -26,11 +26,12 @@ struct s_hash_context {
 	char			*stdin_str;								/* STDIN string */
 	u64				 stdin_strlen;							/* STDIN string length */
 	t_list			*input_file;							/* Input file */
-	void 			(*hash_file_func)(HashCtx *ctx, char *path);			/* Function to hash file */
+	s8				(*hash_file_func)(HashCtx *ctx, char *path);			/* Function to hash file */
 	void 			(*hash_str_func)(HashCtx *ctx, u8 *str, u64 len);		/* Function to hash string */
 	char			*algo_name;								/* Algorithm name for output message */
 	u32				*hash;									/* Hash (digest) */	
-	u32				hash_size;								/* Hash size */	
+	u32				hash_size;								/* Hash size */
+	s32				flag_val;								/* Flag value */
 };
 
 /* binary_utils.c */
@@ -51,7 +52,7 @@ FT_INLINE void display_hash(u32 *hash, u32 hash_size) {
 			ft_printf_fd(1, "%x", byte);
 		}
     }
-	ft_printf_fd(1, RESET"\n");
+	ft_printf_fd(1, RESET);
 }
 
 /**
