@@ -156,12 +156,12 @@ void MD5_fill_hash(u32 *hash, MD5_Ctx *c) {
  * @brief Process the MD5 algorithm
  * @param input input string to hash
  */
-void MD5_hash_str(u8 *input, u64 input_size) {
-	MD5_Ctx c = {0};
+void MD5_hash_str(HashCtx *ctx, u8 *str, u64 len) {
+	MD5_Ctx		c = {0};
 	t_list		*current = NULL;
 	u32			i = 0;
 
-	MD5_init(&c, input, input_size);
+	MD5_init(&c, str, len);
 	// ft_printf_fd(1, CYAN"Input: %s\nInput Bin %s\n", input, c.binary_input);
 	// ft_printf_fd(1, "Input size: %u --> %u == 0x%x\n", c.input_size, c.binary_input_size, c.binary_input_size);
 	// ft_printf_fd(1, "List size: %u\n"RESET, c.list_size);
@@ -174,14 +174,8 @@ void MD5_hash_str(u8 *input, u64 input_size) {
 		current = current->next;
 	}
 
-	u32 *hash = malloc(sizeof(u32) * 4);
-	if (!hash) {
-		ft_printf_fd(2, "Error: MD5_hash_str: malloc failed\n");
-		return;
-	}
-	MD5_fill_hash(hash, &c);
-
-	display_hash(hash, 4);
+	MD5_fill_hash(ctx->hash, &c);
+	display_hash(ctx->hash, 4);
 
 	MD5_Ctx_free(&c);
 }
@@ -190,15 +184,17 @@ void MD5_hash_str(u8 *input, u64 input_size) {
  * @brief Hash a file with MD5 algorithm
  * @param path file path
 */
-void MD5_hash_file(char *path) {
+void MD5_hash_file(HashCtx *ctx, char *path) {
 	u64		file_size = 0;
 	char	*file_map = sstring_read_fd(-1, path, &file_size);
 
-	if (file_map) {
-		ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
-		MD5_hash_str((u8 *)file_map, file_size);
-		free(file_map);
+	if (!file_map) {
+		ft_printf_fd(1, "ft_ssl: md5: %s No such file or directory\n", path);
+		return;
 	}
+	ft_printf_fd(1, PINK"sstring_read_fd load File %s size: %u\n"RESET, path, file_size);
+	MD5_hash_str(ctx, (u8 *)file_map, file_size);
+	free(file_map);
 }
 
 
@@ -206,6 +202,7 @@ void MD5_set_context(HashCtx *ctx) {
 	ctx->hash_file_func = MD5_hash_file;
 	ctx->hash_str_func = MD5_hash_str;
 	ctx->hash_size = 4;
+	ctx->algo_name = ft_strdup("MD5");
 }
 
 // To remove

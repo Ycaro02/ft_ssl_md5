@@ -50,25 +50,28 @@ void ssl_opt_flag_init(char *prg_name, t_flag_context *flag_ctx) {
 	add_flag_option(flag_ctx, S_FLAG_CHAR, S_OPTION, (UINT32_MAX - 1), CHAR_VALUE, "string");
 }
 
-s8 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx, char **input_str) {
-	s8 error = 0;
-	u32 flag = 0;
-
+s32 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
+	s32 flag = 0;
+	s8	error = 0;
 
 	ssl_opt_flag_init(argv[0], flag_ctx);
 
 	/* Need to adapt to to -1/+1 for skip first args (hash function argument)*/
-	flag = parse_flag(argc, argv, flag_ctx, &error);
+	// flag = parse_flag(argc, argv, flag_ctx, &error);
+	
+
+	
+	flag = parse_flag(argc - 1, argv + 1, flag_ctx, &error);
 	if (error == -1) {
 		ft_printf_fd(1, "Parse_flag error: %d\n", error);
-		return (FALSE);
+		return (-1);
 	}
-	// display_option_list(*flag_ctx);
-	*input_str = get_opt_value(flag_ctx->opt_lst, flag, S_OPTION);
-	return (TRUE);
+	display_option_list(*flag_ctx);
+	// *input_str = get_opt_value(flag_ctx->opt_lst, flag, S_OPTION);
+	return (flag);
 }
 
-void read_stdin() {
+void read_stdin(HashCtx *ctx) {
 	u64 size_read = 0;
 	char *content = sstring_read_fd(0, NULL, &size_read);
 	if (size_read == 0) { /* No content */
@@ -76,50 +79,81 @@ void read_stdin() {
 		return;
 	}
 	if (content) {
-		ft_printf_fd(1, "STDIN content: %s -> size %u\n", content, size_read);
-		MD5_hash_str((u8 *)content, size_read);
+		ctx->stdin_str = ft_strdup(content);
+		ctx->stdin_strlen = ft_strlen(content);
+		ctx->hash_str_func(ctx, (u8 *)ctx->stdin_str, ctx->stdin_strlen);
 	}
+}
+
+s32 handle_hash_algo(int argc, char **argv, HashCtx *ctx) {
+	if (argc < 2) {
+		ft_printf_fd(1, SSL_USAGE_STRING);
+		return (1);
+	} else if (ftlib_strcmp(argv[1], "md5") == 0) {
+		/* set hash algo function need to parse it*/
+		MD5_set_context(ctx);
+		argv[1] = "";
+	}
+	else if (ftlib_strcmp(argv[1], "sha256") == 0) {
+		ft_printf_fd(1, "SHA256 Not implemented\n");
+		argv[1] = "";
+		return (1);
+	} else {
+		ft_printf_fd(1, SSL_ERROR_STRING, argv[1], argv[1]);
+		return (1);
+	}
+
+	if (!(ctx->hash = ft_calloc(sizeof(u32), ctx->hash_size))) {
+		return (1);
+	}
+	return (0);
+}
+
+void free_hash_context(HashCtx *ctx) {
+	free_flag_context(&ctx->flag_ctx);
+	ft_lstclear(&ctx->input_file, free);
+	free(ctx->input_str);
+	free(ctx->stdin_str);
+	free(ctx->algo_name);
+	free(ctx->hash);
+
 }
 
 int main(int argc, char **argv) {
 	// run_test();
 
+	/* Init hash context used to handle different hash algo */
 	HashCtx ctx = {0};
-	FlagCtx flag_ctx = {0};
+	s32		flag = 0;
 
+	if (handle_hash_algo(argc, argv, &ctx) != 0) {
+		return (1);
+	}
+	flag = ssl_handle_flag(argc, argv, &ctx.flag_ctx);
 	
-	// ft_printf_fd(1, SSL_USAGE_STRING);
-	// ft_printf_fd(1, SSL_ERROR_STRING, "lol", "lol");
-
-	/* set hash algo function need to parse it*/
-	MD5_set_context(&ctx);
-
-	/* Process -p input (read stdin) || no flag provided */
-	// read_stdin();
-
-	/* Process -s input to fill ctx.input_str */
-	ssl_handle_flag(argc, argv, &flag_ctx, &ctx.input_str);
-	ctx.input_strlen = ft_strlen(ctx.input_str);
+	/* Read stdin if no argument is given or if -p flag is set */
+	if (flag == 0 || has_flag(flag, P_OPTION)) {
+		read_stdin(&ctx);
+	}
+	/* Process -s input */
+	if (has_flag(flag, S_OPTION)) {
+		ctx.input_str = get_opt_value(ctx.flag_ctx.opt_lst, flag, S_OPTION);
+		ctx.input_strlen = ft_strlen(ctx.input_str);
+		ctx.hash_str_func(&ctx, (u8 *)ctx.input_str, ctx.input_strlen);
+	}
 	
-
 	/* Extract file args in t_list */
-	// ctx.input_file = extract_args(argc, argv);
-	// for (t_list *tmp = ctx.input_file; tmp; tmp = tmp->next) {
-	// 	ft_printf_fd(1, "File: %s\n", (char *)tmp->content);
-	// }
-
+	ctx.input_file = extract_args(argc, argv);
 	/* process all other args to set input file lst */
 	ft_lstadd_front(&ctx.input_file, ft_lstnew(ft_strdup("ft_ssl")));
 
-
-	if (ctx.input_str) {
-		ctx.hash_str_func((u8 *)ctx.input_str, ctx.input_strlen);
-		// MD5_hash_str((u8 *)s_flag_input, ft_strlen(s_flag_input));
+	for (t_list *tmp = ctx.input_file; tmp; tmp = tmp->next) {
+		ctx.hash_file_func(&ctx, (char *)tmp->content);
 	}
-	
-	ctx.hash_file_func(ctx.input_file->content);
 
+	free_hash_context(&ctx);
 
+	// ctx.hash_file_func(ctx.input_file->content);
 	// MD5_hash_str((u8 *)"abc", ft_strlen("abc"));
 	// MD5_hash_str((u8 *)TESTSTRING, ft_strlen(TESTSTRING));
 	// MD5_hash_file_read("Makefile");

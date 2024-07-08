@@ -49,7 +49,7 @@ FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 
 #define MD5_NB_ITERATION	64
 
-/* We need to use them with the mod operator on the i number operation i % 4 */
+/* Shift value for each round */
 #define MD5_SHIFT1	((u32 [4]){ 7, 12, 17, 22 })	/* Round 1 */
 #define MD5_SHIFT2	((u32 [4]){ 5, 9, 14, 20 })		/* Round 2 */
 #define MD5_SHIFT3	((u32 [4]){ 4, 11, 16, 23 })	/* Round 3 */
@@ -76,8 +76,8 @@ typedef struct s_MD5_context {
 } MD5_Ctx;
 
 /* md5.c*/
-void	MD5_hash_str(u8 *input, u64 len);
-void	MD5_hash_file(char *path);
+void	MD5_hash_str(HashCtx *ctx, u8 *str, u64 len);
+void	MD5_hash_file(HashCtx *ctx, char *path);
 void	MD5_set_context(HashCtx *ctx);
 
 #endif /* HEADER_MD5_H */
