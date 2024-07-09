@@ -6,7 +6,7 @@
 
 
 /* atoi_base.c */
-int		ft_atoi_base(char *str, char *base);
+// int		ft_atoi_base(char *str, char *base);
 
 /* test.c */
 void	test_char_to_binary();

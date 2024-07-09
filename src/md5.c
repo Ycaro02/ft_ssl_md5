@@ -4,46 +4,13 @@
 #include "../include/handle_endian.h"
 
 /**
- * @brief Split a block into 16 words of 32 bits
- * @param block block to split
- * @param splited_block splited block to fill
- * @param block_idx block index
- */
-void MD5_split_block(char *block, u32 **splited_block, u32 block_idx, u32 max_block) {
-	u32 i = 0, j = 0, last_word = MD5_NB_WORD - 1;
-
-	while (j < MD5_NB_WORD) {
-		/* Convert binary string in u32 and inverse endian ( little to big )*/
-		splited_block[block_idx][j] = binary_string_to_u32(block + i, 32, TRUE);
-		i += 32;
-		j++;
-	}
-
-	/* Handle special case for the len in the last block */
-	if (block_idx == max_block -1) {
-		u64 tmp = splited_block[block_idx][last_word] + splited_block[block_idx][last_word - 1];
-		/* Restore len in little endian and update 2 last word in consequence */
-		tmp = SWAP_BYTE_64(tmp);
-		splited_block[block_idx][last_word - 1] = tmp >> 32;
-		splited_block[block_idx][last_word] = tmp << 32;
-	}
-
-	// for (u32 i = 0; i < 16; i++) {
-	// 	ft_printf_fd(1, "M%d = 0x%x\n", i, splited_block[block_idx][i]);
-	// }
-}
-
-
-
-
-/**
  * @brief Compute K constant
  * @param K K constant to fill
  */
-void MD5_K_get(u32 K[MD5_NB_ITERATION]) {
+void MD5_K_get(u32 K[MD5_IT_NB]) {
 	s32 i = 0;
 
-	while (i < MD5_NB_ITERATION) {
+	while (i < MD5_IT_NB) {
 		K[i] = floor(fabs(sin(i + 1)) * (1UL << 32U));
 		i++;
 	}
@@ -55,36 +22,35 @@ void MD5_K_get(u32 K[MD5_NB_ITERATION]) {
  * @param input input string to hash (in ascii)
  */
 void MD5_init(MD5_Ctx *c, u8 *input, u64 input_size) {
-	u32 i = 0;
+	t_list *tmp = NULL;
 
 	c->input = input;
-
-	/* TODO: Need to avoid this strlen call */
 	c->input_size = input_size;
-	c->binary_input_size = c->input_size * 8;
-	
-	
-	c->binary_input = string_to_binary(input, c->input_size);
-	c->block_list = binary_string_to_block_lst(c->binary_input, MD5_BLOCK_SIZE, MD5_LAST_BLOCK_SIZE);
+	MD5_K_get(c->K);
+	if (!(c->block_list = build_block_list(c->input, c->input_size))) {
+		ft_printf_fd(2, "Error: MD5_init: build_block_list failed\n");
+		return;
+	}
 	c->list_size = ft_lstsize(c->block_list);
-	c->splited_block = malloc(sizeof(u32 *) * c->list_size);
-	if (!c->splited_block) {
+	if (!(c->splited_block = malloc(sizeof(u32 *) * c->list_size))) {
 		ft_printf_fd(2, "Error: MD5_init: malloc failed\n");
 		return;
 	}
 
-	MD5_K_get(c->K);
-
-	while (i < c->list_size) {
-		c->splited_block[i] = malloc(sizeof(u32) * MD5_NB_WORD);
-		i++;
+	tmp = c->block_list;
+	for (u32 i = 0; i < c->list_size; i++) {
+		if (!(c->splited_block[i] = malloc(sizeof(u32) * MD5_NB_WORD))) {
+			ft_printf_fd(2, "Error: MD5_init: malloc failed\n");
+			free_incomplete_array((void **)c->splited_block, i);
+			return ;
+		}
+		block_to_u32(tmp->content, c->splited_block[i]);
+		tmp = tmp->next;
 	}
-
 	c->A = RA_HEX;
 	c->B = RB_HEX;
 	c->C = RC_HEX;
 	c->D = RD_HEX;
-
 }
 
 void MD5_Ctx_free(MD5_Ctx *c) {
@@ -93,7 +59,6 @@ void MD5_Ctx_free(MD5_Ctx *c) {
 		free(c->splited_block[i]);
 	}
 	free(c->splited_block);
-	free(c->binary_input);
 }
 
 
@@ -122,7 +87,7 @@ void MD5_block_compute(MD5_Ctx *ctx, u32 block_idx) {
 	d = ctx->D;
 
 
-	for (s32 i = 0; i < MD5_NB_ITERATION; i++) {
+	for (s32 i = 0; i < MD5_IT_NB; i++) {
 		if (i < 16) {
 			m_idx = i;
 			compute = MD5_rounds_compute(ctx->A, func_f(ctx->B, ctx->C, ctx->D), (ctx->K[i] + M[m_idx]), MD5_SHIFT1[i % 4]);
@@ -162,21 +127,14 @@ void MD5_hash_str(HashCtx *ctx, u8 *str, u64 len) {
 	u32			i = 0;
 
 	MD5_init(&c, str, len);
-	// ft_printf_fd(1, CYAN"Input: %s\nInput Bin %s\n", input, c.binary_input);
-	// ft_printf_fd(1, "Input size: %u --> %u == 0x%x\n", c.input_size, c.binary_input_size, c.binary_input_size);
-	// ft_printf_fd(1, "List size: %u\n"RESET, c.list_size);
 	current = c.block_list;
 	while (i < c.list_size) {
-		// ft_printf_fd(1, ORANGE"Block content:\n"RESET"%s\n", current->content);
-		MD5_split_block(current->content, c.splited_block, i, c.list_size);
 		MD5_block_compute(&c, i);
 		i++;
 		current = current->next;
 	}
 
 	MD5_fill_hash(ctx->hash, &c);
-	// display_hash(ctx->hash, 4);
-
 	MD5_Ctx_free(&c);
 }
 
@@ -206,53 +164,3 @@ void MD5_set_context(HashCtx *ctx) {
 	ctx->algo_name = ft_strdup("MD5");
 }
 
-// To remove
-
-/* Used for load file easier than read and multiple alloc */
-// #include <sys/mman.h>
-// #include <sys/stat.h>
-
-// FT_INLINE u8 *mmap_file(char *path, u64 *file_size, u32 min_size)
-// {
-//     struct stat	st;
-// 	void		*map;
-//     int			fd = open(path, O_RDONLY);
-
-//     if (fd == -1) {
-//         ft_printf_fd(2, "Failed to open file %s\n", path);
-//         return (NULL);
-//     }
-
-//     ft_bzero(&st, sizeof(st));
-//     fstat(fd, &st);
-//     *file_size = st.st_size;
-
-//     if (*file_size <= min_size) {
-//         close(fd);
-//         ft_printf_fd(2, "File %s is empty\n", path);
-//         return (NULL);
-//     }
-
-//     map = mmap(0, *file_size, PROT_READ, MAP_PRIVATE, fd, 0);
-
-//     if (map == MAP_FAILED) {
-//         close(fd);
-//         ft_printf_fd(2, "Failed to open file %s\n", path);
-//         return (NULL);
-//     }
-//     return (map);
-// }
-
-// u8		*map = mmap_file(path, &file_size, 0);
-// u64 	map_file_size = 0;
-// if (cmp_large_str((u8 *)file_map, map, map_file_size) == 0) {
-// 	ft_printf_fd(1, GREEN"Same %s size: %u\n"RESET, path, file_size);
-// } else {
-// 	ft_printf_fd(1, RED"Not Same %s size: %u\n"RESET, path, file_size);
-// }
-// if (map) {
-// 	ft_printf_fd(1, YELLOW"mmap load File %s size: %u\n"RESET, path, file_size);
-// 	MD5_hash_str(map, file_size);
-// 	munmap(map, map_file_size);
-// }
-// end to remove

@@ -37,17 +37,10 @@ FT_INLINE u32	func_g(u32 b, u32 c, u32 d) { return ((d & b) | ((~d) & c)); }
 FT_INLINE u32	func_h(u32 b, u32 c, u32 d) { return (b ^ c ^ d); }
 FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 
-
-/* Define MD5 block size */
-#define MD5_BLOCK_SIZE ((u32)512U)
-
-/* Define MD5 last block size, 512 - len on 64 - 1 cause we need at least one padding bits  */
-#define MD5_LAST_BLOCK_SIZE ((u32)(512U - 64U - 1U))
-
 /* Number of M data (word) per block */
-#define MD5_NB_WORD			16
+#define MD5_NB_WORD	16
 
-#define MD5_NB_ITERATION	64
+#define MD5_IT_NB	64
 
 /* Shift value for each round */
 #define MD5_SHIFT1	((u32 [4]){ 7, 12, 17, 22 })	/* Round 1 */
@@ -56,9 +49,8 @@ FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 #define MD5_SHIFT4	((u32 [4]){ 6, 10, 15, 21 })	/* Round 4 */
 
 typedef struct s_MD5_context {
-	u32		K[64];				/* K constant */
+	u32		K[MD5_IT_NB];		/* K constant */
 	u8		*input;				/* Input string */
-	char	*binary_input;		/* Input string in binary */
 	t_list	*block_list;		/* List of binary block str */
 	
 	/*	
@@ -68,7 +60,6 @@ typedef struct s_MD5_context {
 	u32		**splited_block;	/* Splited block (M word for each block) */
 	u32		list_size;			/* Size of block list */
 	u32		input_size;			/* Size of input string */
-	u32		binary_input_size;	/* Size of input string in binary */
 	u32		A;					/* Buffer A */
 	u32		B;					/* Buffer B */
 	u32		C;					/* Buffer C */

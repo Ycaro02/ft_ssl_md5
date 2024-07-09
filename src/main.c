@@ -1,5 +1,4 @@
 #include "../include/ft_ssl.h"
-#include "../include/ssl_test.h"
 #include "../libft/parse_flag/parse_flag.h"
 
 #include "../include/md5.h"
@@ -71,7 +70,6 @@ s32 handle_hash_algo(int argc, char **argv, HashCtx *ctx) {
 		ft_printf_fd(1, SSL_USAGE_STRING);
 		return (1);
 	} else if (ftlib_strcmp(argv[1], "md5") == 0) {
-		/* set hash algo function need to parse it*/
 		MD5_set_context(ctx);
 		argv[1] = "";
 	}
@@ -99,7 +97,6 @@ void free_hash_context(HashCtx *ctx) {
 	free(ctx->hash);
 
 }
-
 
 void display_prefix(HashCtx *ctx, char *str , char *path, s8 is_stdin) {
 	
@@ -134,6 +131,19 @@ void display_suffix(HashCtx *ctx, char *str , char *path, s8 is_stdin) {
 	}
 }
 
+void display_hash(u32 *hash, u32 hash_size) {
+    u32 byte = 0;
+	for (u32 i = 0; i < hash_size; i++) {
+        for (s32 shift = 24; shift >= 0; shift -= 8) {
+            byte = (hash[i] >> shift) & 0xff;
+			if (byte < 16) {
+				ft_printf_fd(1, "0");
+			}
+			ft_printf_fd(1, "%x", byte);
+		}
+    }
+}
+
 void hash_process(HashCtx *ctx, char *path, char *str, s8 is_stdin) {
 	
 	if (str) {
@@ -146,7 +156,7 @@ void hash_process(HashCtx *ctx, char *path, char *str, s8 is_stdin) {
 
 	/* Cut last \n if is stdin */
 	if (is_stdin) {
-		int len = ft_strlen(str);
+		u64 len = ctx->stdin_strlen;
 		if (len > 0 && str[len - 1] == '\n') {
 			str[len - 1] = '\0';
 		}
@@ -156,11 +166,9 @@ void hash_process(HashCtx *ctx, char *path, char *str, s8 is_stdin) {
 		}
 	}
 
+	/* Display output */
 	display_prefix(ctx, str, path, is_stdin);
-	
-	/* Display hash */
 	display_hash(ctx->hash, ctx->hash_size);
-	
 	display_suffix(ctx, str, path, is_stdin);
 
 }
@@ -182,18 +190,12 @@ void read_stdin(HashCtx *ctx) {
 
 
 int main(int argc, char **argv) {
-	// run_test();
-
-	/* Init hash context used to handle different hash algo */
 	HashCtx ctx = {0};
 
 	if (handle_hash_algo(argc, argv, &ctx) != 0) {
 		return (1);
 	}
 	ctx.flag_val = ssl_handle_flag(argc, argv, &ctx.flag_ctx);
-	
-
-	/* Process -s input */
 	if (has_flag(ctx.flag_val, S_OPTION)) {
 		ctx.input_str = get_opt_value(ctx.flag_ctx.opt_lst, ctx.flag_val, S_OPTION);
 	}
@@ -201,126 +203,18 @@ int main(int argc, char **argv) {
 	/* Extract file args in t_list */
 	ctx.input_file = extract_args(argc, argv);
 	
-	s32 lst_size = ft_lstsize(ctx.input_file);
-	
 	/* Read stdin if no argument is given or if -p ctx.flag_val is set */
-	if ((lst_size == 0 && ctx.input_str == NULL)|| has_flag(ctx.flag_val, P_OPTION)) {
+	if ((ft_lstsize(ctx.input_file) == 0 && ctx.input_str == NULL)|| has_flag(ctx.flag_val, P_OPTION)) {
 		read_stdin(&ctx);
 	}
-
 	if (ctx.input_str) {
 		hash_process(&ctx, NULL, ctx.input_str, FALSE);
 	}
-
-
 	/* process all file args */
 	for (t_list *tmp = ctx.input_file; tmp; tmp = tmp->next) {
 		hash_process(&ctx, (char *)tmp->content, NULL, FALSE);
-		// ctx.hash_file_func(&ctx, (char *)tmp->content);
 	}
 
 	free_hash_context(&ctx);
 	return (0);
 }
-
-
-
-/*
-String utils:
-
-char *str_join_char(char *str, char c, char c2) {
-	char *ret = NULL;
-	t_sstring sstr = {};
-
-	clear_sstring(&sstr);
-	push_sstring(&sstr, c);
-	concat_sstring(&sstr, str);
-	if (c2 != '\0') {
-		push_sstring(&sstr, c2);
-	} else {
-		push_sstring(&sstr, c);
-	}
-	ret = ft_strdup(sstr.data);
-	return (ret);
-}
-
-char *str_add_char_before(char *str, char c) {
-	char *ret = NULL;
-	t_sstring sstr = {};
-
-	clear_sstring(&sstr);
-	push_sstring(&sstr, c);
-	concat_sstring(&sstr, str);
-	ret = ft_strdup(sstr.data);
-	return (ret);
-}
-
-char *str_push_char_free(char *str, char c) {
-	char *ret = NULL;
-	t_sstring sstr = {};
-
-	clear_sstring(&sstr);
-	concat_sstring(&sstr, str);
-	push_sstring(&sstr, c);
-	ret = ft_strdup(sstr.data);
-	free(str);
-	return (ret);
-}
-*/
-
-// typedef struct s_contex_info {
-// 	char *prefix;
-// 	char *suffix;
-// } ContextInfo;
-
-// ContextInfo *handle_contextual_info(char *algo_name, char *str, char *path, int is_stdin, int flag_val) {
-// 	ContextInfo *info = ft_calloc(sizeof(ContextInfo), 1);
-// 	char *quote_str = NULL;
-// 	char *braces_str = NULL;
-// 	char *braces_quote_str = NULL;
-
-// 	if (str) {
-// 		quote_str = str_join_char(str, '\"', '\0');
-// 		braces_quote_str = str_join_char(quote_str, '(', ')');
-// 		braces_str = str_join_char(path, '(', ')');
-// 	}
-
-//     if (!has_flag(flag_val, Q_OPTION)) {
-//         if (!has_flag(flag_val, R_OPTION)) {
-//             if (str && !is_stdin) {
-//                 // prefix = ft_sprintf("%s (\"%s\") = ", algo_name, str);
-// 				info->prefix = ft_strjoin_free(braces_quote_str, " = ", 'n');
-// 				info->prefix = str_add_char_before(info->prefix, ' ');
-// 				info->prefix = ft_strjoin_free(algo_name, info->prefix, 's');
-//             } else if (str && is_stdin) {
-//                 // info->prefix = ft_sprintf("(\"%s\") = ", str);
-// 				info->prefix = ft_strjoin_free(braces_quote_str, " = ", 'n');
-//             } else {
-//                 // info->prefix = ft_sprintf("%s (%s) = ", algo_name, path);
-// 				info->prefix = ft_strjoin_free(braces_str, " = ", 'n');
-// 				info->prefix = str_add_char_before(info->prefix, ' ');
-// 				info->prefix = ft_strjoin_free(algo_name, info->prefix, 's');
-// 			}
-//         } else {
-// 			info->suffix = str ? str_add_char_before(quote_str, ' ') : str_add_char_before(path, ' ');
-// 			info->suffix = str_push_char_free(info->suffix, '\n');
-//         }
-//     }
-
-// 	// ft_printf_fd(1, "prefix: %s\n", info->prefix);
-// 	// ft_printf_fd(1, "suffix: %s\n", info->suffix);
-
-// 	if (!info->prefix) {
-// 		info->prefix = ft_strdup("");
-// 	}
-
-// 	if (!info->suffix) {
-// 		info->suffix = ft_strdup("\n");
-// 	}
-
-
-// 	free(quote_str);
-// 	free(braces_str);
-// 	free(braces_quote_str);
-// 	return (info);
-// }

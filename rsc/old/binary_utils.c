@@ -1,12 +1,75 @@
 #include "../include/ft_ssl.h"
 #include "../include/handle_endian.h"
 
+
+
 /**
- * @brief Convert a string to a binary string
+ * @brief Macro to convert a digit to a binary string
+ * @param digit digit to convert
+ * @param size size of the digit (in bits)
+ * @param result store allocated char * digit converted to binary (output)
+ */
+#define DIGIT_TO_BINSTR(digit, size, result) \
+do { \
+    char *__binstr__ = malloc((size) + 1); \
+	u64 __tmp_digit__ = (digit); \
+    if (!__binstr__) { \
+        ft_printf_fd(2, "Error: DIGIT_TO_BIN_STR: malloc failed\n"); \
+        result = NULL; \
+    } else { \
+        __binstr__[size] = '\0'; \
+        for (s32 i = (size) - 1; i >= 0; i--) { \
+			__binstr__[i] = (__tmp_digit__ & 1) + '0'; \
+            __tmp_digit__ >>= 1; \
+        } \
+        result = __binstr__; \
+    } \
+} while (0)
+
+/* 
+	__binstr__[i] = (__tmp_digit__ & 1) + '0'; == __binstr__[i] = (__tmp_digit__ % 2) + '0'
+	__tmp_digit__ >>= 1; == __tmp_digit__ /= 2;
+*/
+
+
+/**
+ * @brief Split a block into 16 words of 32 bits
+ * @param block block to split
+ * @param splited_block splited block to fill
+ * @param block_idx block index
+ */
+void MD5_split_block(char *block, u32 **splited_block, u32 block_idx, u32 max_block) {
+	u32 i = 0, j = 0, last_word = MD5_NB_WORD - 1;
+
+	while (j < MD5_NB_WORD) {
+		/* Convert binary string in u32 and inverse endian ( little to big )*/
+		splited_block[block_idx][j] = binary_string_to_u32(block + i, 32, TRUE);
+		i += 32;
+		j++;
+	}
+
+	/* Handle special case for the len in the last block */
+	if (block_idx == max_block -1) {
+		u64 tmp = splited_block[block_idx][last_word] + splited_block[block_idx][last_word - 1];
+		/* Restore len in little endian and update 2 last word in consequence */
+		tmp = SWAP_BYTE_64(tmp);
+		splited_block[block_idx][last_word - 1] = tmp >> 32;
+		splited_block[block_idx][last_word] = tmp << 32;
+	}
+
+	ft_printf_fd(1, "First implementation\n", block_idx);
+	for (u32 i = 0; i < 16; i++) {
+		ft_printf_fd(1, "M%d = 0x%x\n", i, splited_block[block_idx][i]);
+	}
+}
+
+
+/**
+ * @brief Convert a unsigned char array to a binary string
  * @param str string to convert
  * @return allocated char * str converted to binary
 */
-char *string_to_binary(u8 *str, u64 len) {
+char *string_to_binary(u8 *array, u64 len) {
 	char	*binary = NULL, *tmp = NULL;
 	u64		i = 0, j = 0;
 
@@ -16,7 +79,7 @@ char *string_to_binary(u8 *str, u64 len) {
 	}
 	while (i < len) {
 		// tmp = char_to_binary(str[i]);
-		DIGIT_TO_BINSTR(str[i], 8, tmp);
+		DIGIT_TO_BINSTR(array[i], 8, tmp);
 		if (!tmp) {
 			ft_printf_fd(2, "Error: string_to_binary: malloc failed\n");
 			free(binary);
@@ -168,3 +231,55 @@ u32 binary_string_to_u32(char *binary, u32 size, s8 rev_endian) {
 	}
 	return (res);
 }
+
+
+// To remove
+
+/* Used for load file easier than read and multiple alloc */
+// #include <sys/mman.h>
+// #include <sys/stat.h>
+
+// FT_INLINE u8 *mmap_file(char *path, u64 *file_size, u32 min_size)
+// {
+//     struct stat	st;
+// 	void		*map;
+//     int			fd = open(path, O_RDONLY);
+
+//     if (fd == -1) {
+//         ft_printf_fd(2, "Failed to open file %s\n", path);
+//         return (NULL);
+//     }
+
+//     ft_bzero(&st, sizeof(st));
+//     fstat(fd, &st);
+//     *file_size = st.st_size;
+
+//     if (*file_size <= min_size) {
+//         close(fd);
+//         ft_printf_fd(2, "File %s is empty\n", path);
+//         return (NULL);
+//     }
+
+//     map = mmap(0, *file_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+//     if (map == MAP_FAILED) {
+//         close(fd);
+//         ft_printf_fd(2, "Failed to open file %s\n", path);
+//         return (NULL);
+//     }
+//     return (map);
+// }
+
+// u8		*map = mmap_file(path, &file_size, 0);
+// u64 	map_file_size = 0;
+// if (cmp_large_str((u8 *)file_map, map, map_file_size) == 0) {
+// 	ft_printf_fd(1, GREEN"Same %s size: %u\n"RESET, path, file_size);
+// } else {
+// 	ft_printf_fd(1, RED"Not Same %s size: %u\n"RESET, path, file_size);
+// }
+// if (map) {
+// 	ft_printf_fd(1, YELLOW"mmap load File %s size: %u\n"RESET, path, file_size);
+// 	MD5_hash_str(map, file_size);
+// 	munmap(map, map_file_size);
+// }
+// end to remove

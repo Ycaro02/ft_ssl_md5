@@ -34,27 +34,11 @@ struct s_hash_context {
 	s32				flag_val;								/* Flag value */
 };
 
-/* binary_utils.c */
-char	*string_to_binary(u8 *str, u64 len);
-u32		binary_string_to_u32(char *binary, u32 size, s8 rev_endian);
-t_list *binary_string_to_block_lst(char *str, u32 block_size, u32 last_block_size);
+/* Block size in bytes (512 bits) */
+#define BYTES_BLOCK_SIZE 64
 
-FT_INLINE void display_hash(u32 *hash, u32 hash_size) {
-    u32 byte = 0;
-	// ft_printf_fd(1, ORANGE"Hash: "RESET""YELLOW);
-	// ft_printf_fd(1, YELLOW);
-	
-	for (u32 i = 0; i < hash_size; i++) {
-        for (s32 shift = 24; shift >= 0; shift -= 8) {
-            byte = (hash[i] >> shift) & 0xff;
-			if (byte < 16) {
-				ft_printf_fd(1, "0");
-			}
-			ft_printf_fd(1, "%x", byte);
-		}
-    }
-	// ft_printf_fd(1, RESET);
-}
+/* Last block size in bytes (448 bits) 512 - 64 for len */
+#define BYTES_LAST_BLOCK_SIZE 56
 
 /**
  * @brief Rotate bits to the left
@@ -64,34 +48,8 @@ FT_INLINE void display_hash(u32 *hash, u32 hash_size) {
 */
 #define ROTATE_LEFT(val, shift) (((val) << (shift)) | ((val) >> (32 - shift)))
 
-/**
- * @brief Macro to convert a digit to a binary string
- * @param digit digit to convert
- * @param size size of the digit (in bits)
- * @param result store allocated char * digit converted to binary (output)
- */
-#define DIGIT_TO_BINSTR(digit, size, result) \
-do { \
-    char *__binstr__ = malloc((size) + 1); \
-	u64 __tmp_digit__ = (digit); \
-    if (!__binstr__) { \
-        ft_printf_fd(2, "Error: DIGIT_TO_BIN_STR: malloc failed\n"); \
-        result = NULL; \
-    } else { \
-        __binstr__[size] = '\0'; \
-        for (s32 i = (size) - 1; i >= 0; i--) { \
-			__binstr__[i] = (__tmp_digit__ & 1) + '0'; \
-            __tmp_digit__ >>= 1; \
-        } \
-        result = __binstr__; \
-    } \
-} while (0)
-
-/* 
-	__binstr__[i] = (__tmp_digit__ & 1) + '0'; == __binstr__[i] = (__tmp_digit__ % 2) + '0'
-	__tmp_digit__ >>= 1; == __tmp_digit__ /= 2;
-*/
-
-
+/* Prepare block */
+t_list *build_block_list(u8 *padded, u64 len);
+void	block_to_u32(u8 *block, u32 *output);
 
 #endif /* HEADER_FT_SSL_H */
