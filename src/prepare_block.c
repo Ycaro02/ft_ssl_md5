@@ -1,7 +1,5 @@
 #include "../include/ft_ssl.h"
 #include "../include/md5.h"
-// #include "../include/handle_endian.h"
-
 
 /**
  * @brief Pads the input data according to MD5 padding rules.

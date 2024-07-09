@@ -10,6 +10,7 @@ MAIN_MANDATORY 	=	main.c
 
 SRCS			=	md5.c\
 					prepare_block.c\
+					ssl_parse.c\
 
 # SRCS_BONUS		=	main_bonus.c
 

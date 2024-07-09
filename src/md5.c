@@ -160,7 +160,8 @@ s8 MD5_hash_file(HashCtx *ctx, char *path) {
 void MD5_set_context(HashCtx *ctx) {
 	ctx->hash_file_func = MD5_hash_file;
 	ctx->hash_str_func = MD5_hash_str;
-	ctx->hash_size = 4;
 	ctx->algo_name = ft_strdup("MD5");
+	/* (MD5_DIGEST_SIZE / 4) */
+	ctx->hash_size = (MD5_DIGEST_SIZE >> 2);
 }
 

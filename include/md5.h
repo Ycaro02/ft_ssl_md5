@@ -37,10 +37,14 @@ FT_INLINE u32	func_g(u32 b, u32 c, u32 d) { return ((d & b) | ((~d) & c)); }
 FT_INLINE u32	func_h(u32 b, u32 c, u32 d) { return (b ^ c ^ d); }
 FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 
-/* Number of M data (word) per block */
+/* Number of M data (word) per block a word is a 32 bits unsigne integer */
 #define MD5_NB_WORD	16
 
+/* Number of iteration for each block */
 #define MD5_IT_NB	64
+
+/* Size of MD5 digest in bytes */
+#define MD5_DIGEST_SIZE	16
 
 /* Shift value for each round */
 #define MD5_SHIFT1	((u32 [4]){ 7, 12, 17, 22 })	/* Round 1 */

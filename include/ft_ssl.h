@@ -15,9 +15,29 @@ sha256\n\n\
 Flags:\n\
 -p -q -r -s\n"\
 
-typedef t_flag_context FlagCtx;
+/*
+	Read stdin if no argument is given or if -p flag is set
+	-p, echo STDIN to STDOUT and append the checksum to STDOUT
+	-q, quiet mode
+	-r, reverse the format of the output.
+	-s, print the sum of the given string
+*/
 
-typedef struct s_hash_context HashCtx;
+enum e_flag {
+	P_OPTION = (1<<0),
+	Q_OPTION = (1<<1),
+	R_OPTION = (1<<2),
+	S_OPTION = (1<<3),
+};
+
+#define P_FLAG_CHAR	'p'
+#define Q_FLAG_CHAR	'q'
+#define R_FLAG_CHAR	'r'
+#define S_FLAG_CHAR	's'
+
+
+typedef t_flag_context			FlagCtx;
+typedef struct s_hash_context	HashCtx;
 
 struct s_hash_context {
 	FlagCtx			flag_ctx;								/* Flag context */
@@ -48,8 +68,14 @@ struct s_hash_context {
 */
 #define ROTATE_LEFT(val, shift) (((val) << (shift)) | ((val) >> (32 - shift)))
 
+/* ssl_parse */
+s32		ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx);
+s32 handle_hash_algo(int argc, char **argv, HashCtx *ctx);
+
 /* Prepare block */
-t_list *build_block_list(u8 *padded, u64 len);
+t_list	*build_block_list(u8 *padded, u64 len);
 void	block_to_u32(u8 *block, u32 *output);
+void	*get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find);
+
 
 #endif /* HEADER_FT_SSL_H */
