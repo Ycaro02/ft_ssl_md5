@@ -58,28 +58,57 @@ void display_hash(u32 *hash, u32 hash_size) {
     }
 }
 
+char *str_no_caps(char *str) {
+	char *no_caps = ft_strdup(str);
+	u64 len = ft_strlen(str);
+	for (u64 i = 0; i < len; i++) {
+		if (no_caps[i] >= 'A' && no_caps[i] <= 'Z') {
+			no_caps[i] = ft_tolower(str[i]);
+		}
+	}
+	return (no_caps);
+}
+
+s8 hash_file(HashCtx *ctx, char *path) {
+	char	*file_content = NULL, *algo_name = NULL;
+	u64		file_size = 0;
+
+	algo_name = str_no_caps(ctx->algo_name);
+	if (!(file_content = sstring_read_fd(-1, path, &file_size))) {
+		ft_printf_fd(1, "ft_ssl: %s: %s: No such file or directory\n", algo_name, path);
+		free(algo_name);
+		return (FALSE);
+	}
+	ctx->hash_func(ctx, (u8 *)file_content, file_size);
+	free(file_content);
+	free(algo_name);
+	return (TRUE);
+}
+
+void handle_stdin_input(HashCtx *ctx, char *str) {
+	/* Cut last \n if is stdin */
+	u64 len = ctx->stdin_strlen;
+	if (len > 0 && str[len - 1] == '\n') {
+		str[len - 1] = '\0';
+	}
+	/* Quiet mode with stdin (-P) */
+	if (has_flag(ctx->flag_val, Q_OPTION) && has_flag(ctx->flag_val, P_OPTION)) {
+		ft_printf_fd(1, "%s\n", str);
+	}
+}
+
 void hash_process(HashCtx *ctx, char *path, char *str, s8 is_stdin) {
-	
 	if (str) {
-		ctx->hash_str_func(ctx, (u8 *)str, ft_strlen(str));
+		ctx->hash_func(ctx, (u8 *)str, ft_strlen(str));
 	} else {
-		if (ctx->hash_file_func(ctx, path) == FALSE) {
+		if (!hash_file(ctx, path)) {
 			return;
 		}
 	}
 
-	/* Cut last \n if is stdin */
 	if (is_stdin) {
-		u64 len = ctx->stdin_strlen;
-		if (len > 0 && str[len - 1] == '\n') {
-			str[len - 1] = '\0';
-		}
-		/* Quiet mode with stdin (-P) */
-		if (has_flag(ctx->flag_val, Q_OPTION) && has_flag(ctx->flag_val, P_OPTION)) {
-			ft_printf_fd(1, "%s\n", str);
-		}
+		handle_stdin_input(ctx, str);
 	}
-
 	/* Display output */
 	display_prefix(ctx, str, path, is_stdin);
 	display_hash(ctx->hash, ctx->hash_size);
@@ -99,9 +128,9 @@ void read_stdin(HashCtx *ctx) {
 		ctx->stdin_str = ft_strdup(content);
 		ctx->stdin_strlen = ft_strlen(content);
 		hash_process(ctx, NULL, ctx->stdin_str, TRUE);
+		free(content);
 	}
 }
-
 
 int main(int argc, char **argv) {
 	HashCtx ctx = {0};

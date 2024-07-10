@@ -75,21 +75,8 @@ void SHA256_hash_str(HashCtx *ctx, u8 *str, u64 len) {
 	ft_lstclear(&block_list, free);
 }
 
-s8 SHA256_hash_file(HashCtx *ctx, char *path) {
-	char	*file_content = NULL;
-	u64		file_size = 0;
-
-	if (!(file_content = sstring_read_fd(-1, path, &file_size))) {
-		return (FALSE);
-	}
-	SHA256_hash_str(ctx, (u8 *)file_content, file_size);
-	free(file_content);
-	return (TRUE);
-}
-
 void SHA256_set_context(HashCtx *ctx) {
 	ctx->hash_size = (SHA256_DIGEST_SIZE >> 2);
-	ctx->hash_str_func = SHA256_hash_str;
-	ctx->hash_file_func = SHA256_hash_file;
+	ctx->hash_func = SHA256_hash_str;
 	ctx->algo_name = ft_strdup("SHA256");
 }

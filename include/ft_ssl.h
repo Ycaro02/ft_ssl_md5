@@ -40,18 +40,17 @@ typedef t_flag_context			FlagCtx;
 typedef struct s_hash_context	HashCtx;
 
 struct s_hash_context {
-	FlagCtx			flag_ctx;								/* Flag context */
-	char			*input_str;								/* Input string provided by -s args*/
-	u64				 input_strlen;							/* Input string length */
-	char			*stdin_str;								/* STDIN string */
-	u64				 stdin_strlen;							/* STDIN string length */
-	t_list			*input_file;							/* Input file */
-	s8				(*hash_file_func)(HashCtx *ctx, char *path);			/* Function to hash file */
-	void 			(*hash_str_func)(HashCtx *ctx, u8 *str, u64 len);		/* Function to hash string */
-	char			*algo_name;								/* Algorithm name for output message */
-	u32				*hash;									/* Hash (digest) */	
-	u32				hash_size;								/* Hash size */
-	s32				flag_val;								/* Flag value */
+	FlagCtx			flag_ctx;							/* Flag context */
+	char			*input_str;							/* Input string provided by -s args*/
+	u64				 input_strlen;						/* Input string length */
+	char			*stdin_str;							/* STDIN string */
+	u64				 stdin_strlen;						/* STDIN string length */
+	t_list			*input_file;						/* Input file */
+	void 			(*hash_func)(HashCtx*, u8*, u64);	/* Function to hash string */
+	char			*algo_name;							/* Algorithm name for output message */
+	u32				*hash;								/* Hash (digest) */	
+	u32				hash_size;							/* Hash size */
+	s32				flag_val;							/* Flag value */
 };
 
 /* Block size in bytes (512 bits) */
