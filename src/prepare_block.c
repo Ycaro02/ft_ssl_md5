@@ -8,7 +8,7 @@
  * @param new_len The length of the padded data.
  * @return The padded data.
  */
-static u8 *input_padding(u8 *input, u64 len, u64 *new_len) {
+static u8 *input_padding(u8 *input, u64 len, u64 *new_len, s8 reverse_endian) {
     u64	bit_len = len * 8;
     u64	padding_len = 0;
 	u8	*padded = NULL;
@@ -31,9 +31,15 @@ static u8 *input_padding(u8 *input, u64 len, u64 *new_len) {
     ft_memset(padded + len + 1, 0, padding_len - 1);
 
     /* Append the original length in bits at the end of the padded data */
-    for (int i = 0; i < 8; i++) {
-        // padded[*new_len - 8 + i] = (bit_len >> (8 * i)) & 0xFF;
-        padded[*new_len - 8 + i] = (bit_len >> (i << 3)) & 0xFF;
+	if (reverse_endian) { /* if the endianess is reversed little -> big */
+        for (int i = 0; i < 8; i++) {
+            padded[*new_len - 8 + i] = (bit_len >> (56 - (i << 3))) & 0xFF;
+        }
+    } else {
+        for (int i = 0; i < 8; i++) {
+    		// padded[*new_len - 8 + i] = (bit_len >> (8 * i)) & 0xFF;
+            padded[*new_len - 8 + i] = (bit_len >> (i << 3)) & 0xFF;
+        }
     }
 
     return (padded);
@@ -76,12 +82,12 @@ static t_list *data_to_block_list(u8 *padded, u64 len) {
  * @param len The length of the input data.
  * @return The head of the linked list of 512-bit blocks.
  */
-t_list *build_block_list(u8 *input, u64 len) {
+t_list *build_block_list(u8 *input, u64 len, s8 reverse_len_endian) {
     u64		new_len = 0;
     u8		*padded = NULL;
 	t_list	*block_list = NULL;
 	
-    if (!(padded = input_padding(input, len, &new_len))) {
+    if (!(padded = input_padding(input, len, &new_len, reverse_len_endian))) {
         return (NULL);
     }
     block_list = data_to_block_list(padded, new_len);

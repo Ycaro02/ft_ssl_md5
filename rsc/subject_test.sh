@@ -23,6 +23,8 @@ check_output() {
 	fi
 }
 
+
+# MD5 subjects tests
 display_color_msg ${YELLOW} "MD5 Subjects tests"
 
 # Test 1
@@ -75,5 +77,43 @@ CMD=$(echo "just to be extra clear" | ${SSL_BIN} md5 -r -q -p -s "foo" file)
 check_output "just to be extra clear\n3ba35f1ea0d170cb3b9a752e3360286c\nacbd18db4cc2f85cedef654fccc4a4d8\n53d53ea94217b259c11a5a2d104ec58a" "${CMD}"
 
 display_color_msg ${MAGENTA} "All MD5 subjects tests passed."
-
 rm -f expected output file
+
+
+# SHA256 subjects tests
+display_color_msg ${YELLOW} "SHA256 Subjects tests"
+
+TEST_ID=0
+
+# test 1 
+echo "https://www.42.fr/" > website
+CMD=$(${SSL_BIN} sha256 -q website)
+check_output "1ceb55d2845d9dd98557b50488db12bbf51aaca5aa9c1199eb795607a2457daf" "${CMD}"
+
+# test 2
+CMD=$(${SSL_BIN} sha256 -s "42 is nice")
+check_output "SHA256 (\"42 is nice\") = b7e44c7a40c5f80139f0a50f3650fb2bd8d00b0d24667c4c2ca32c88e13b758f" "${CMD}"
+display_color_msg ${MAGENTA} "All SHA256 subjects tests passed."
+
+
+
+# Test with ft_ssl binary (advanced tests)
+display_color_msg ${YELLOW} "Test with ft_ssl binary"
+TEST_ID=0
+
+# test 1 
+display_color_msg ${YELLOW} "MD5:"
+CMD=$(${SSL_BIN} md5 ft_ssl -q)
+OUTPUT=$(md5sum ft_ssl | awk '{print $1}')
+check_output "${OUTPUT}" "${CMD}"
+
+
+# test 2
+display_color_msg ${YELLOW} "SHA256:"
+CMD=$(${SSL_BIN} sha256 ft_ssl -q)
+OUTPUT=$(sha256sum ft_ssl | awk '{print $1}')
+check_output "${OUTPUT}" "${CMD}"
+
+display_color_msg ${MAGENTA} "All tests passed."
+
+rm -f expected output website

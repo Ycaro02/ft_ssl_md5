@@ -70,10 +70,10 @@ struct s_hash_context {
 
 /* ssl_parse */
 s32		ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx);
-s32 handle_hash_algo(int argc, char **argv, HashCtx *ctx);
+s32		handle_hash_algo(int argc, char **argv, HashCtx *ctx);
 
 /* Prepare block */
-t_list	*build_block_list(u8 *padded, u64 len);
+t_list	*build_block_list(u8 *padded, u64 len, s8 reverse_len_endian);
 void	block_to_u32(u8 *block, u32 *output);
 void	*get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find);
 

@@ -27,7 +27,7 @@ void MD5_init(MD5_Ctx *c, u8 *input, u64 input_size) {
 	c->input = input;
 	c->input_size = input_size;
 	MD5_K_get(c->K);
-	if (!(c->block_list = build_block_list(c->input, c->input_size))) {
+	if (!(c->block_list = build_block_list(c->input, c->input_size, FALSE))) {
 		ft_printf_fd(2, "Error: MD5_init: build_block_list failed\n");
 		return;
 	}

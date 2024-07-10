@@ -1,5 +1,6 @@
 #include "../include/ft_ssl.h"
 #include "../include/md5.h"
+#include "../include/sha256.h"
 
 
 void *get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find)
@@ -52,9 +53,9 @@ s32 handle_hash_algo(int argc, char **argv, HashCtx *ctx) {
 		argv[1] = "";
 	}
 	else if (ftlib_strcmp(argv[1], "sha256") == 0) {
-		ft_printf_fd(1, "SHA256 Not implemented\n");
+		// ft_printf_fd(1, "SHA256 Not implemented\n");
+		SHA256_set_context(ctx);
 		argv[1] = "";
-		return (1);
 	} else {
 		ft_printf_fd(1, SSL_ERROR_STRING, argv[1], argv[1]);
 		return (1);

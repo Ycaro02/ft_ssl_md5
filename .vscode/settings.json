@@ -22,6 +22,7 @@
 		"md5.h": "c",
 		"parse_flag.h": "c",
 		"sha.h": "c",
-		"sha2.h": "c"
+		"sha2.h": "c",
+		"sha256.h": "c"
 	}
 }

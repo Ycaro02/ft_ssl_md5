@@ -8,9 +8,10 @@ SRC_DIR 		=	src
 
 MAIN_MANDATORY 	=	main.c
 
-SRCS			=	md5.c\
-					prepare_block.c\
+SRCS			=	prepare_block.c\
 					ssl_parse.c\
+					md5.c\
+					sha256.c\
 
 # SRCS_BONUS		=	main_bonus.c
 
