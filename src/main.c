@@ -135,7 +135,7 @@ void read_stdin(HashCtx *ctx) {
 int main(int argc, char **argv) {
 	HashCtx ctx = {0};
 
-	if (handle_hash_algo(argc, argv, &ctx) != 0) {
+	if (handle_hash_algo(argc, argv, &ctx) != TRUE) {
 		return (1);
 	}
 	ctx.flag_val = ssl_handle_flag(argc, argv, &ctx.flag_ctx);
