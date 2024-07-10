@@ -53,6 +53,30 @@ struct s_hash_context {
 	s32				flag_val;							/* Flag value */
 };
 
+
+/* Context function pointer */
+typedef void (*ContextFunction)(HashCtx*);
+
+/* Hash algorithm enum ID */
+enum e_hash_algo {
+	MD5_ID= 0,
+	SHA256_ID = 1,
+};
+
+/* Context function declarations */
+extern void MD5_set_context(HashCtx *ctx);
+extern void SHA256_set_context(HashCtx *ctx);
+
+/* Context function array */
+#define CONTEXT_FUNC_ARRAY {MD5_set_context, SHA256_set_context}
+
+/* Number of implemented algorithm */
+#define IMPLEMENTED_ALGO_COUNT 2
+
+/* Implemented algorithm str accepted in args 1*/
+#define IMPLEMENTED_ALGO (char *[]){"md5", "sha256"}
+
+
 /* Block size in bytes (512 bits) */
 #define BYTES_BLOCK_SIZE 64
 

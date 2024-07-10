@@ -83,13 +83,13 @@ t_list *MD5_init(u32 K[64], u32 buff[4], u8 *str, u64 len) {
  * @brief Process the MD5 algorithm
  * @param input input string to hash
  */
-void MD5_hash_str(HashCtx *ctx, u8 *str, u64 len) {
+void MD5_hash(HashCtx *ctx, u8 *str, u64 len) {
 	t_list		*block_list = NULL, *current = NULL;
 	u32			i = 0;
 	u32			K_constant[MD5_IT_NB] = {0}, buffer[4] = {0},  lst_size = 0;
 
 	if (!(block_list = MD5_init(K_constant, buffer, str, len))) {
-		ft_printf_fd(2, "Error: MD5_hash_str: MD5_init failed\n");
+		ft_printf_fd(2, "Error: MD5_hash: MD5_init failed\n");
 		return;
 	}
 
@@ -107,7 +107,7 @@ void MD5_hash_str(HashCtx *ctx, u8 *str, u64 len) {
 }
 
 void MD5_set_context(HashCtx *ctx) {
-	ctx->hash_func = MD5_hash_str;
+	ctx->hash_func = MD5_hash;
 	ctx->algo_name = ft_strdup("MD5");
 	/* (MD5_DIGEST_SIZE / 4) */
 	ctx->hash_size = (MD5_DIGEST_SIZE >> 2);

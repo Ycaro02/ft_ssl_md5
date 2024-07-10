@@ -56,12 +56,12 @@ void SHA256_fill_hash(u32 *hash, u32 state[8]) {
 	}
 }
 
-void SHA256_hash_str(HashCtx *ctx, u8 *str, u64 len) {
+void SHA256_hash(HashCtx *ctx, u8 *str, u64 len) {
 	t_list		*block_list = NULL, *current = NULL;
 	u32			state[8] = {0}, i = 0, list_size = 0;
 
 	if (!(block_list = SHA256_init(state, str, len))) {
-		ft_printf_fd(2, "Error: SHA256_hash_str: SHA256_init failed\n");
+		ft_printf_fd(2, "Error: SHA256_hash: SHA256_init failed\n");
 		return;
 	}
 	list_size = ft_lstsize(block_list);
@@ -77,6 +77,6 @@ void SHA256_hash_str(HashCtx *ctx, u8 *str, u64 len) {
 
 void SHA256_set_context(HashCtx *ctx) {
 	ctx->hash_size = (SHA256_DIGEST_SIZE >> 2);
-	ctx->hash_func = SHA256_hash_str;
+	ctx->hash_func = SHA256_hash;
 	ctx->algo_name = ft_strdup("SHA256");
 }
