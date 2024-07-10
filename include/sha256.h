@@ -22,9 +22,6 @@
 #define SHA256_R7 0x5BE0CD19
 
 
-// #define SHA256_REGISTER_INIT	{0x6A09E667, 0xBB67AE85, 0x3C6EF372, 
-// 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19}
-
 /* Define the SHA shift, rotate left and rotate right macro */
 
 /* Shift right */
@@ -98,14 +95,11 @@
 typedef struct s_sha256_ctx {
 	u8		*input;		/* Input string */
 	t_list	*block_list;	/* List of binary block str */
-
-	// u32 	**splited_block;	/* Splited block (M word for each block) */
 	u32		list_size;		/* Size of block list */
 	u32		input_size;		/* Size of input string */
 	u32		state[8];		/* State of the hash */
 } SHA256_Ctx;
 
-void SHA256_set_context(HashCtx *ctx);
-void SHA256_hash_str(HashCtx *ctx, u8 *str, u64 len);
-s8 SHA256_hash_file(HashCtx *ctx, char *path);
+void	SHA256_set_context(HashCtx *ctx);
+
 #endif /* HEADER_SHA256_H */

@@ -52,26 +52,7 @@ FT_INLINE u32	func_i(u32 b, u32 c, u32 d) { return (c ^ (b | (~d))); }
 #define MD5_SHIFT3	((u32 [4]){ 4, 11, 16, 23 })	/* Round 3 */
 #define MD5_SHIFT4	((u32 [4]){ 6, 10, 15, 21 })	/* Round 4 */
 
-typedef struct s_MD5_context {
-	u32		K[MD5_IT_NB];		/* K constant */
-	u8		*input;				/* Input string */
-	t_list	*block_list;		/* List of binary block str */
-	
-	/*	
-		Splited block, (M data) of 16 uint (512 / 16 == 16 4 bytes word) for each block
-		first idx is block idx and second is splited data 
-	*/
-	u32		**splited_block;	/* Splited block (M word for each block) */
-	u32		list_size;			/* Size of block list */
-	u32		input_size;			/* Size of input string */
-	u32		A;					/* Buffer A */
-	u32		B;					/* Buffer B */
-	u32		C;					/* Buffer C */
-	u32		D;					/* Buffer D */
-} MD5_Ctx;
-
 /* md5.c*/
-void	MD5_hash_str(HashCtx *ctx, u8 *str, u64 len);
-s8		MD5_hash_file(HashCtx *ctx, char *path);
 void	MD5_set_context(HashCtx *ctx);
+
 #endif /* HEADER_MD5_H */
