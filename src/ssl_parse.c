@@ -55,7 +55,7 @@ s32 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
 	/* -1 +1 cause we skip first args (algo_mod) */
 	flag = parse_flag(argc - 1, argv + 1, flag_ctx, &error);
 	if (error == -1) {
-		ft_printf_fd(1, "Parse_flag error: %d\n", error);
+		// ft_printf_fd(1, "Parse_flag error: %d\n", error);
 		return (-1);
 	}
 	// display_option_list(*flag_ctx);

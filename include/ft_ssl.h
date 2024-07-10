@@ -86,5 +86,7 @@ t_list	*build_block_list(u8 *padded, u64 len, s8 reverse_len_endian);
 void	block_to_u32(u8 *block, u32 *output);
 void	*get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find);
 
+/* hash display */
+void output_display(HashCtx *ctx, char *path, char *str, s8 is_stdin);
 
 #endif /* HEADER_FT_SSL_H */
