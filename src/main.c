@@ -146,8 +146,8 @@ int main(int argc, char **argv) {
 	/* Extract file args in t_list */
 	ctx.input_file = extract_args(argc, argv);
 	
-	/* Read stdin if no argument is given or if -p ctx.flag_val is set */
-	if ((ft_lstsize(ctx.input_file) == 0 && ctx.input_str == NULL)|| has_flag(ctx.flag_val, P_OPTION)) {
+	/* Read stdin if no argument is given or if -p is set */
+	if ((ft_lstsize(ctx.input_file) == 0 && ctx.input_str == NULL) || has_flag(ctx.flag_val, P_OPTION)) {
 		read_stdin(&ctx);
 	}
 	if (ctx.input_str) {
