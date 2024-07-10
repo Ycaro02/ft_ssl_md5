@@ -103,6 +103,7 @@ void MD5_hash_str(HashCtx *ctx, u8 *str, u64 len) {
 	}
 
 	MD5_fill_hash(ctx->hash, buffer);
+	ft_lstclear(&block_list, free);
 }
 
 /**

@@ -92,14 +92,7 @@
 /* Size of SHA-256 digest in bytes */
 #define SHA256_DIGEST_SIZE 32
 
-typedef struct s_sha256_ctx {
-	u8		*input;		/* Input string */
-	t_list	*block_list;	/* List of binary block str */
-	u32		list_size;		/* Size of block list */
-	u32		input_size;		/* Size of input string */
-	u32		state[8];		/* State of the hash */
-} SHA256_Ctx;
-
+/* Init sha256 hash context */
 void	SHA256_set_context(HashCtx *ctx);
 
 #endif /* HEADER_SHA256_H */

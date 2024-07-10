@@ -2,7 +2,7 @@
 #include "../include/sha256.h"
 #include "../include/handle_endian.h"
 
-void sha256_compute(SHA256_Ctx *ctx, u8 *block_data) {
+void sha256_compute(u32 state[8], u8 *block_data) {
     static u32 K[64] = SHA256_K;
 	
 	u32 		w[64] = {0};				/* Message schedule (word) */
@@ -11,9 +11,9 @@ void sha256_compute(SHA256_Ctx *ctx, u8 *block_data) {
     s32 		t;							/* Loop counter */
 
     /* Save register */
-    a = ctx->state[0]; b = ctx->state[1]; c = ctx->state[2];
-    d = ctx->state[3]; e = ctx->state[4]; f = ctx->state[5];
-    g = ctx->state[6]; h = ctx->state[7];
+    a = state[0]; b = state[1]; c = state[2];
+    d = state[3]; e = state[4]; f = state[5];
+    g = state[6]; h = state[7];
 
 	/* Fill the 16 first word value (message schedule) */
 	block_to_u32(block_data, w);
@@ -36,43 +36,43 @@ void sha256_compute(SHA256_Ctx *ctx, u8 *block_data) {
     }
 
     /* Add the working variables back into the current hash value */
-    ctx->state[0] += a; ctx->state[1] += b; ctx->state[2] += c;
-    ctx->state[3] += d; ctx->state[4] += e; ctx->state[5] += f;
-    ctx->state[6] += g; ctx->state[7] += h;
+    state[0] += a; state[1] += b; state[2] += c;
+    state[3] += d; state[4] += e; state[5] += f;
+    state[6] += g; state[7] += h;
 }
 
 
-void SHA256_init(SHA256_Ctx *c, u8 *str, u64 len) {
-	c->state[0] = SHA256_R0; c->state[1] = SHA256_R1;
-	c->state[2] = SHA256_R2; c->state[3] = SHA256_R3;
-	c->state[4] = SHA256_R4; c->state[5] = SHA256_R5;
-	c->state[6] = SHA256_R6; c->state[7] = SHA256_R7;
-	c->input = str;
-	c->input_size = len;
-	c->block_list = build_block_list(str, len, TRUE);
-	c->list_size = ft_lstsize(c->block_list);
+t_list *SHA256_init(u32 state[8], u8 *str, u64 len) {
+	state[0] = SHA256_R0; state[1] = SHA256_R1;
+	state[2] = SHA256_R2; state[3] = SHA256_R3;
+	state[4] = SHA256_R4; state[5] = SHA256_R5;
+	state[6] = SHA256_R6; state[7] = SHA256_R7;
+	return (build_block_list(str, len, TRUE));
 }
 
-void SHA256_fill_hash(u32 *hash, SHA256_Ctx *c) {
+void SHA256_fill_hash(u32 *hash, u32 state[8]) {
 	for (u32 i = 0; i < 8; i++) {
-		hash[i] = c->state[i];
+		hash[i] = state[i];
 	}
-
 }
 
 void SHA256_hash_str(HashCtx *ctx, u8 *str, u64 len) {
-	SHA256_Ctx	c = {0};
-	t_list		*current = NULL;
-	u32			i = 0;
+	t_list		*block_list = NULL, *current = NULL;
+	u32			state[8] = {0}, i = 0, list_size = 0;
 
-	SHA256_init(&c, str, len);
-	current = c.block_list;
-	while (i < c.list_size) {
-		sha256_compute(&c, current->content);
+	if (!(block_list = SHA256_init(state, str, len))) {
+		ft_printf_fd(2, "Error: SHA256_hash_str: SHA256_init failed\n");
+		return;
+	}
+	list_size = ft_lstsize(block_list);
+	current = block_list;
+	while (i < list_size) {
+		sha256_compute(state, current->content);
 		i++;
 		current = current->next;
 	}
-	SHA256_fill_hash(ctx->hash, &c);
+	SHA256_fill_hash(ctx->hash, state);
+	ft_lstclear(&block_list, free);
 }
 
 s8 SHA256_hash_file(HashCtx *ctx, char *path) {
@@ -85,10 +85,6 @@ s8 SHA256_hash_file(HashCtx *ctx, char *path) {
 	SHA256_hash_str(ctx, (u8 *)file_content, file_size);
 	free(file_content);
 	return (TRUE);
-}
-
-void SHA256_Ctx_free(SHA256_Ctx *c) {
-	ft_lstclear(&c->block_list, free);
 }
 
 void SHA256_set_context(HashCtx *ctx) {
