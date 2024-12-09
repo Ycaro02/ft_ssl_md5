@@ -9,22 +9,22 @@
  * @param to_find flag to find
  * @return allocated copy option value or NULL if not found
  */
-void *get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find)
-{
-	t_opt_node	*opt = NULL;
-	void		*ret = NULL;
+// void *get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find)
+// {
+// 	t_opt_node	*opt = NULL;
+// 	void		*ret = NULL;
 
-	if (has_flag(flag, to_find)) {
-		opt = search_exist_opt(opt_lst, is_same_flag_val_opt, (void *)&to_find);
-		if (opt && opt->value_type == DECIMAL_VALUE) {
-			ret = malloc(sizeof(u32));
-			*(u32 *)ret = opt->val.digit;
-		} else if (opt && (opt->value_type == HEXA_VALUE || opt->value_type == CHAR_VALUE)) {
-			ret = ft_strdup(opt->val.str);
-		}
-	}
-	return (ret);
-}
+// 	if (has_flag(flag, to_find)) {
+// 		opt = search_exist_opt(opt_lst, is_same_flag_val_opt, (void *)&to_find);
+// 		if (opt && opt->value_type == DECIMAL_VALUE) {
+// 			ret = malloc(sizeof(u32));
+// 			*(u32 *)ret = opt->val.digit;
+// 		} else if (opt && (opt->value_type == HEXA_VALUE || opt->value_type == CHAR_VALUE)) {
+// 			ret = ft_strdup(opt->val.str);
+// 		}
+// 	}
+// 	return (ret);
+// }
 
 /**
  * @brief Add different flag accepted by ssl

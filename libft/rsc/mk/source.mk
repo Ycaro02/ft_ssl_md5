@@ -6,7 +6,7 @@
 #    By: nfour <nfour@student.42angouleme.fr>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/11 16:54:20 by nfour             #+#    #+#              #
-#    Updated: 2024/08/26 18:04:52 by nfour            ###   ########.fr        #
+#    Updated: 2024/12/09 18:27:34 by nfour            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -90,10 +90,6 @@ MATH_DIR			=	math
 MATH_SRC			=	basic_math.c
 
 
-HASHMAP_DIR			=	HashMap
-
-HASHMAP_SRC			=	HashMap.c\
-
 BMP_PARSER_DIR		=	BMP_parser
 
 BMP_PARSER_SRC		=	parse_bmp.c\
@@ -105,7 +101,6 @@ ALL_OBJ_DIR = 	$(OBJ_DIR)/libft\
 				$(OBJ_DIR)/$(PARSE_FLAG_DIR)\
 				$(OBJ_DIR)/$(STACK_STRING_DIR)\
 				$(OBJ_DIR)/$(MATH_DIR)\
-				$(OBJ_DIR)/$(HASHMAP_DIR)\
 				$(OBJ_DIR)/$(BMP_PARSER_DIR)\
 
 				
