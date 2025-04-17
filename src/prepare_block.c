@@ -8,18 +8,32 @@
  * @param new_len The length of the padded data.
  * @return The padded data.
  */
-static u8 *input_padding(u8 *input, u64 len, u64 *new_len, s8 reverse_endian) {
+static u8 *input_padding(u8 *input, u64 len, u64 *new_len, s8 reverse_endian, s8 is_whirpool) {
     u64	bit_len = len * 8;
     u64	padding_len = 0;
 	u8	*padded = NULL;
 	
 	/* if the length of the input data is less than 56 bytes, we need to add padding to the last block */
-	if (len % BYTES_BLOCK_SIZE < BYTES_LAST_BLOCK_SIZE) {
-		padding_len = BYTES_LAST_BLOCK_SIZE - (len % BYTES_BLOCK_SIZE);
-	} else { /* else we need to add a new bloc for padding */
-		padding_len = (BYTES_BLOCK_SIZE + BYTES_LAST_BLOCK_SIZE) - (len % BYTES_BLOCK_SIZE);
+	if (is_whirpool) {
+		// Get congruence of len mod 64
+		if (len < 32) {
+			padding_len = 32 - len;
+		} else {
+			padding_len = 64 + 32 - len;
+		}
+		// then just add 32 bytes for the length to complete the block
+		*new_len = len + padding_len + 32;
+	} else {
+		if (len % BYTES_BLOCK_SIZE < BYTES_LAST_BLOCK_SIZE) {
+			padding_len += BYTES_LAST_BLOCK_SIZE - (len % BYTES_BLOCK_SIZE);
+		} else { /* else we need to add a new bloc for padding */
+			padding_len += (BYTES_BLOCK_SIZE + BYTES_LAST_BLOCK_SIZE) - (len % BYTES_BLOCK_SIZE);
+		}
+		*new_len = len + padding_len + 8;
 	}
-	*new_len = len + padding_len + 8;
+
+
+	ft_printf_fd(2, "new_len: %u\n", *new_len);
 
     if (!(padded = malloc(*new_len))) {
         ft_printf_fd(2, "Error: input_padding: malloc failed\n");
@@ -82,12 +96,12 @@ static t_list *data_to_block_list(u8 *padded, u64 len) {
  * @param len The length of the input data.
  * @return The head of the linked list of 512-bit blocks.
  */
-t_list *build_block_list(u8 *input, u64 len, s8 reverse_len_endian) {
+t_list *build_block_list(u8 *input, u64 len, s8 reverse_len_endian, s8 is_whirpool) {
     u64		new_len = 0;
     u8		*padded = NULL;
 	t_list	*block_list = NULL;
 	
-    if (!(padded = input_padding(input, len, &new_len, reverse_len_endian))) {
+    if (!(padded = input_padding(input, len, &new_len, reverse_len_endian, is_whirpool))) {
         return (NULL);
     }
     block_list = data_to_block_list(padded, new_len);

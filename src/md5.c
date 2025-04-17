@@ -17,7 +17,7 @@ void MD5_K_get(u32 K[MD5_IT_NB]) {
 }
 
 static inline u32 MD5_rounds_compute(u32 a, u32 func_compute, u32 k_add_m, u32 s) {
-	return (ROTATE_LEFT((a + func_compute + k_add_m), s));
+	return (ROTATE_LEFT_32((a + func_compute + k_add_m), s));
 }
 
 static void MD5_swap_compute(u32 buff[4], u32 compute) {
@@ -76,7 +76,7 @@ t_list *MD5_init(u32 K[64], u32 buff[4], u8 *str, u64 len) {
 	buff[1] = RB_HEX;
 	buff[2] = RC_HEX;
 	buff[3] = RD_HEX;
-	return (build_block_list(str, len, FALSE));
+	return (build_block_list(str, len, FALSE, FALSE));
 }
 
 /**

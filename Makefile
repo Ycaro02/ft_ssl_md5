@@ -2,7 +2,7 @@ include libft/rsc/mk/color.mk
 include rsc/mk/source.mk
 
 NAME			=	ft_ssl
-CC				=	clang
+CC				=	clang -g3
 
 
 # ASCII_ART		=	./rsc/sh/vox_ascii.sh

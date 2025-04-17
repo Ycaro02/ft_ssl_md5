@@ -47,7 +47,7 @@ t_list *SHA256_init(u32 state[8], u8 *str, u64 len) {
 	state[2] = SHA256_R2; state[3] = SHA256_R3;
 	state[4] = SHA256_R4; state[5] = SHA256_R5;
 	state[6] = SHA256_R6; state[7] = SHA256_R7;
-	return (build_block_list(str, len, TRUE));
+	return (build_block_list(str, len, TRUE, FALSE));
 }
 
 void SHA256_fill_hash(u32 *hash, u32 state[8]) {
