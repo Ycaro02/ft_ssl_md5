@@ -147,91 +147,78 @@ typedef struct WhirlpoolCtx {
 void whirlpool_process_block(WhirlpoolCtx *c) {
 	u64 i;
 
-	u64 *x = c->x;
-	u64 *k = c->k;
-	u64 *l = c->l;
-	u64 *state = c->state;
- 
 	//Convert from big-endian byte order to host byte order
-	for(i = 0; i < 8; i++)
-	{	   
+	for(i = 0; i < 8; i++) {
 		for (u64 j = 0; j < 8; j++) {
-		// printf("context->buffer[%d] = %c\n", i * 8 + j, context->buffer[i * 8 + j]);
-		// printf("%c", c->buffer[i * 8 + j]);
-		printf("%02x", c->buffer[i * 8 + j]);
-	  } 
-	   x[i] = LOAD64BE(c->buffer + i * 8);
-	  printf(" : x[%lu] = %016lX\n", i, x[i]);
+			printf("%02x", c->buffer[i * 8 + j]);
+		} 
+	   c->x[i] = LOAD64BE(c->buffer + i * 8);
+	   printf(" : x[%lu] = %016lX\n", i, c->x[i]);
 	}
  
-	k[0] = c->h[0];
-	k[1] = c->h[1];
-	k[2] = c->h[2];
-	k[3] = c->h[3];
-	k[4] = c->h[4];
-	k[5] = c->h[5];
-	k[6] = c->h[6];
-	k[7] = c->h[7];
+	c->k[0] = c->h[0];
+	c->k[1] = c->h[1];
+	c->k[2] = c->h[2];
+	c->k[3] = c->h[3];
+	c->k[4] = c->h[4];
+	c->k[5] = c->h[5];
+	c->k[6] = c->h[6];
+	c->k[7] = c->h[7];
  
-	state[0] = x[0] ^ k[0];
-	state[1] = x[1] ^ k[1];
-	state[2] = x[2] ^ k[2];
-	state[3] = x[3] ^ k[3];
-	state[4] = x[4] ^ k[4];
-	state[5] = x[5] ^ k[5];
-	state[6] = x[6] ^ k[6];
-	state[7] = x[7] ^ k[7];
+	c->state[0] = c->x[0] ^ c->k[0];
+	c->state[1] = c->x[1] ^ c->k[1];
+	c->state[2] = c->x[2] ^ c->k[2];
+	c->state[3] = c->x[3] ^ c->k[3];
+	c->state[4] = c->x[4] ^ c->k[4];
+	c->state[5] = c->x[5] ^ c->k[5];
+	c->state[6] = c->x[6] ^ c->k[6];
+	c->state[7] = c->x[7] ^ c->k[7];
  
 	//Iterate over all rounds
 	for(i = 0; i < 10; i++) {
 	   //Key schedule
-	   RHO(l[0], k, 0, rc[i]);
-	   RHO(l[1], k, 1, 0);
-	   RHO(l[2], k, 2, 0);
-	   RHO(l[3], k, 3, 0);
-	   RHO(l[4], k, 4, 0);
-	   RHO(l[5], k, 5, 0);
-	   RHO(l[6], k, 6, 0);
-	   RHO(l[7], k, 7, 0);
+	   RHO(c->l[0], c->k, 0, rc[i]);
+	   RHO(c->l[1], c->k, 1, 0);
+	   RHO(c->l[2], c->k, 2, 0);
+	   RHO(c->l[3], c->k, 3, 0);
+	   RHO(c->l[4], c->k, 4, 0);
+	   RHO(c->l[5], c->k, 5, 0);
+	   RHO(c->l[6], c->k, 6, 0);
+	   RHO(c->l[7], c->k, 7, 0);
  
-	   k[0] = l[0];
-	   k[1] = l[1];
-	   k[2] = l[2];
-	   k[3] = l[3];
-	   k[4] = l[4];
-	   k[5] = l[5];
-	   k[6] = l[6];
-	   k[7] = l[7];
+	   c->k[0] = c->l[0];
+	   c->k[1] = c->l[1];
+	   c->k[2] = c->l[2];
+	   c->k[3] = c->l[3];
+	   c->k[4] = c->l[4];
+	   c->k[5] = c->l[5];
+	   c->k[6] = c->l[6];
+	   c->k[7] = c->l[7];
  
 	   //Apply the round function
-	   RHO(l[0], state, 0, k[0]);
-	   RHO(l[1], state, 1, k[1]);
-	   RHO(l[2], state, 2, k[2]);
-	   RHO(l[3], state, 3, k[3]);
-	   RHO(l[4], state, 4, k[4]);
-	   RHO(l[5], state, 5, k[5]);
-	   RHO(l[6], state, 6, k[6]);
-	   RHO(l[7], state, 7, k[7]);
+	   RHO(c->l[0], c->state, 0, c->k[0]);
+	   RHO(c->l[1], c->state, 1, c->k[1]);
+	   RHO(c->l[2], c->state, 2, c->k[2]);
+	   RHO(c->l[3], c->state, 3, c->k[3]);
+	   RHO(c->l[4], c->state, 4, c->k[4]);
+	   RHO(c->l[5], c->state, 5, c->k[5]);
+	   RHO(c->l[6], c->state, 6, c->k[6]);
+	   RHO(c->l[7], c->state, 7, c->k[7]);
  
-	   state[0] = l[0];
-	   state[1] = l[1];
-	   state[2] = l[2];
-	   state[3] = l[3];
-	   state[4] = l[4];
-	   state[5] = l[5];
-	   state[6] = l[6];
-	   state[7] = l[7];
+	   c->state[0] = c->l[0];
+	   c->state[1] = c->l[1];
+	   c->state[2] = c->l[2];
+	   c->state[3] = c->l[3];
+	   c->state[4] = c->l[4];
+	   c->state[5] = c->l[5];
+	   c->state[6] = c->l[6];
+	   c->state[7] = c->l[7];
 	}
  
 	//Update the hash value
-	c->h[0] ^= state[0] ^ x[0];
-	c->h[1] ^= state[1] ^ x[1];
-	c->h[2] ^= state[2] ^ x[2];
-	c->h[3] ^= state[3] ^ x[3];
-	c->h[4] ^= state[4] ^ x[4];
-	c->h[5] ^= state[5] ^ x[5];
-	c->h[6] ^= state[6] ^ x[6];
-	c->h[7] ^= state[7] ^ x[7];
+	for (int j = 0; j < 8; j++) {
+		c->h[j] ^= c->state[j] ^ c->x[j];
+	}
 }
 
 #include <stdio.h>
@@ -239,12 +226,11 @@ void whirlpool_process_block(WhirlpoolCtx *c) {
 int main(int argc, char **argv) {
 
 	(void)argc;
-	(void)argv;
 
 	t_list		*block_list = NULL, *current = NULL;
 	WhirlpoolCtx *ctx = ft_calloc(1, sizeof(WhirlpoolCtx));
 
-	u8 str[] = "The quick brown fox jumps over the lazy dog";
+	u8 *str = (u8 *)argv[1];
 	u64 len = ft_strlen((char *)str);
 	printf("len: %lu\n", len);
 	block_list = build_block_list(str, len, TRUE, TRUE);

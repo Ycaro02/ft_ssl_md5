@@ -1,6 +1,8 @@
 #include "../include/ft_ssl.h"
 #include "../include/md5.h"
 
+#include <stdio.h>
+
 /**
  * @brief Pads the input data according to MD5 padding rules.
  * @param input The input data.
@@ -15,34 +17,33 @@ static u8 *input_padding(u8 *input, u64 len, u64 *new_len, s8 reverse_endian, s8
 	
 	/* if the length of the input data is less than 56 bytes, we need to add padding to the last block */
 	if (is_whirpool) {
-		// Get congruence of len mod 64
-		if (len < 32) {
-			padding_len = 32 - len;
+		// Get congruence of len with 32 % 64
+		u64 mod_64 = len % BYTES_BLOCK_SIZE;
+		u64 block_size_div_2 = BYTES_BLOCK_SIZE >> 1;
+
+		if (mod_64 < block_size_div_2) {
+			padding_len = block_size_div_2 - mod_64;
 		} else {
-			padding_len = 64 + 32 - len;
+			padding_len = BYTES_BLOCK_SIZE + block_size_div_2 - mod_64;
 		}
-		// then just add 32 bytes for the length to complete the block
-		*new_len = len + padding_len + 32;
+		// then just add block_size_div_2(32) bytes for the length to complete the block
+		*new_len = len + padding_len + block_size_div_2;
 	} else {
 		if (len % BYTES_BLOCK_SIZE < BYTES_LAST_BLOCK_SIZE) {
-			padding_len += BYTES_LAST_BLOCK_SIZE - (len % BYTES_BLOCK_SIZE);
+			padding_len = BYTES_LAST_BLOCK_SIZE - (len % BYTES_BLOCK_SIZE);
 		} else { /* else we need to add a new bloc for padding */
-			padding_len += (BYTES_BLOCK_SIZE + BYTES_LAST_BLOCK_SIZE) - (len % BYTES_BLOCK_SIZE);
+			padding_len = (BYTES_BLOCK_SIZE + BYTES_LAST_BLOCK_SIZE) - (len % BYTES_BLOCK_SIZE);
 		}
 		*new_len = len + padding_len + 8;
 	}
 
-
-	ft_printf_fd(2, "new_len: %u\n", *new_len);
-
-    if (!(padded = malloc(*new_len))) {
+    if (!(padded = ft_calloc(1, *new_len))) {
         ft_printf_fd(2, "Error: input_padding: malloc failed\n");
         return (NULL);
     }
 
     ft_memcpy(padded, input, len);
     padded[len] = 0x80; /* Append a single '1' bit, 0b10000000 */
-    ft_memset(padded + len + 1, 0, padding_len - 1);
 
     /* Append the original length in bits at the end of the padded data */
 	if (reverse_endian) { /* if the endianess is reversed little -> big */
@@ -51,10 +52,18 @@ static u8 *input_padding(u8 *input, u64 len, u64 *new_len, s8 reverse_endian, s8
         }
     } else {
         for (int i = 0; i < 8; i++) {
-    		// padded[*new_len - 8 + i] = (bit_len >> (8 * i)) & 0xFF;
+    		// padded[*new_len - 8 + i] = (bit_len >> (i * 8)) & 0xFF;
             padded[*new_len - 8 + i] = (bit_len >> (i << 3)) & 0xFF;
         }
     }
+
+	(void)reverse_endian;
+	(void)bit_len;
+	printf("padded: ");
+	for (u64 i = 0; i < *new_len; i++) {
+		printf("%02x", padded[i]);
+	}
+	printf("\n");
 
     return (padded);
 }
