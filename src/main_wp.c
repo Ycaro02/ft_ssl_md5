@@ -149,11 +149,7 @@ void whirlpool_process_block(WhirlpoolCtx *c) {
 
 	//Convert from big-endian byte order to host byte order
 	for(i = 0; i < 8; i++) {
-		for (u64 j = 0; j < 8; j++) {
-			printf("%02x", c->buffer[i * 8 + j]);
-		} 
 	   c->x[i] = LOAD64BE(c->buffer + i * 8);
-	   printf(" : x[%lu] = %016lX\n", i, c->x[i]);
 	}
  
 	c->k[0] = c->h[0];
@@ -221,22 +217,41 @@ void whirlpool_process_block(WhirlpoolCtx *c) {
 	}
 }
 
-#include <stdio.h>
+void whirlpool_fill_hash(u32 *hash, u64 *buff) {
+	u8 *digest = ft_calloc(1, 64);
 
-int main(int argc, char **argv) {
+	(void)hash;
 
-	(void)argc;
+	for (size_t i = 0; i < 8; i++) {
+		STORE64BE(buff[i], digest + i * 8);
+	}
 
+	// store digest in u32 array
+	for (size_t i = 0; i < 32; i++) {
+        hash[i] = ((u32)digest[i * 4] << 24) | 
+                  ((u32)digest[i * 4 + 1] << 16) | 
+                  ((u32)digest[i * 4 + 2] << 8) | 
+                  ((u32)digest[i * 4 + 3]);
+    }
+
+	// print hash
+	printf("Hachage Whirlpool\n");
+	for (size_t i = 0; i < 16; i++) {
+		printf("%08X", hash[i]);
+	}
+	printf("\n");
+	free(digest);
+}
+
+void whirlpool_hash(HashCtx *ctx, u8 *str, u64 len) {
 	t_list		*block_list = NULL, *current = NULL;
-	WhirlpoolCtx *ctx = ft_calloc(1, sizeof(WhirlpoolCtx));
+	WhirlpoolCtx *c = ft_calloc(1, sizeof(WhirlpoolCtx));
 
-	u8 *str = (u8 *)argv[1];
-	u64 len = ft_strlen((char *)str);
-	printf("len: %lu\n", len);
-	block_list = build_block_list(str, len, TRUE, TRUE);
+	(void)ctx;
+
+	block_list = build_block_list(str, len, TRUE, (BYTES_BLOCK_SIZE >> 1));
 	if (!block_list) {
-		ft_printf_fd(2, "Error: WHIRLPOOL_hash: build_block_list failed\n");
-		return (1);
+		return ;
 	}
 
 	int i = 0, lst_size = ft_lstsize(block_list);
@@ -244,25 +259,34 @@ int main(int argc, char **argv) {
 	current = block_list;
 
 	while (i < lst_size) {
-		ft_printf_fd(1, "Process block nb %d\n", i);
-		ft_memcpy(ctx->buffer, current->content, BYTES_BLOCK_SIZE);
-		whirlpool_process_block(ctx);
+		ft_memcpy(c->buffer, current->content, BYTES_BLOCK_SIZE);
+		whirlpool_process_block(c);
 		current = current->next;
 		i++;
 	}
 
-	u8 *digest = ft_calloc(1, 64);
+	ctx->hash = ft_calloc(sizeof(u32), 32);
 
-	for(i = 0; i < (64 / 8); i++)
-	{
-		printf("ctx->h[%d] = %016lX\n", i, ctx->h[i]);
-		STORE64BE(ctx->h[i], digest + i * 8);
-	}
+	whirlpool_fill_hash(ctx->hash, c->h);
+}
 
-    printf("Hachage Whirlpool \"%s\":\n", str);
-    for (size_t i = 0; i < 64U; i++) {
-        printf("%02X", digest[i]);
-    }
-    printf("\n");
+#define WHIRLPOOL_DIGEST_SIZE 64
+
+void whirlpool_set_context(HashCtx *ctx) {
+	ctx->hash_func = whirlpool_hash;
+	ctx->algo_name = ft_strdup("whirlpool");
+	ctx->hash_size = (WHIRLPOOL_DIGEST_SIZE >> 1); // div 2
+}
+
+int main(int argc, char **argv) {
+
+	(void)argc;
+	HashCtx *ctx = ft_calloc(1, sizeof(HashCtx));
+	u8 *str = (u8 *)argv[1];
+	u64 len = ft_strlen((char *)str);
+
+	whirlpool_hash(ctx, str, len);
+	return (0);
+
 
 }

@@ -76,7 +76,7 @@ t_list *MD5_init(u32 K[64], u32 buff[4], u8 *str, u64 len) {
 	buff[1] = RB_HEX;
 	buff[2] = RC_HEX;
 	buff[3] = RD_HEX;
-	return (build_block_list(str, len, FALSE, FALSE));
+	return (build_block_list(str, len, FALSE, BYTES_LAST_BLOCK_SIZE));
 }
 
 /**
