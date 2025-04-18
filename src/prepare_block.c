@@ -64,13 +64,13 @@ static u8 *input_padding(u8 *input, u64 len, u64 *new_len, s8 reverse_endian, u6
         }
     }
 
-	(void)reverse_endian;
-	(void)bit_len;
-	printf("padded: ");
-	for (u64 i = 0; i < *new_len; i++) {
-		printf("%02x", padded[i]);
-	}
-	printf("\n");
+	// (void)reverse_endian;
+	// (void)bit_len;
+	// printf("padded: ");
+	// for (u64 i = 0; i < *new_len; i++) {
+	// 	printf("%02x", padded[i]);
+	// }
+	// printf("\n");
 
     return (padded);
 }

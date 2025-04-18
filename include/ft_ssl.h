@@ -7,11 +7,11 @@
 
 #define SSL_USAGE_STRING "usage: ft_ssl command [flags] [file/string]\n"
 
-#define SSL_ERROR_STRING "./ft_ssl %s\n\
-ft_ssl: Error: '%s' is an invalid command.\n\n\
+#define SSL_HELP_STRING "Valid commands:\n\n\
 Commands:\n\
 md5\n\
-sha256\n\n\
+sha256\n\
+whirlpool\n\n\
 Flags:\n\
 -p -q -r -s\n"\
 

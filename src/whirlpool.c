@@ -1,4 +1,5 @@
 #include "../include/ft_ssl.h"
+#include "../include/whirlpool.h"
 
 /**
  *	whirlpool implementation
@@ -90,58 +91,6 @@ static const uint64_t t[256] =
    0x2828A0285D885075, 0x5C5C6D5CDA31B886, 0xF8F8C7F8933FED6B, 0x8686228644A411C2
 };
 
-/**
- * @brief Rotate bits to the right
- * @param val value to rotate
- * @param shift number of bits to shift
- * @return rotated value
-*/
-#define ROR64(val, shift) (((val) >> (shift)) | ((val) << (64 - (shift))))
-
-//Round function
-#define RHO(b, a, n, c) \
-{ \
-   b = t[(a[n] >> 56) & 0xFF]; \
-   b ^= ROR64(t[(a[(n + 7) % 8] >> 48) & 0xFF], 8); \
-   b ^= ROR64(t[(a[(n + 6) % 8] >> 40) & 0xFF], 16); \
-   b ^= ROR64(t[(a[(n + 5) % 8] >> 32) & 0xFF], 24); \
-   b ^= ROR64(t[(a[(n + 4) % 8] >> 24) & 0xFF], 32); \
-   b ^= ROR64(t[(a[(n + 3) % 8] >> 16) & 0xFF], 40); \
-   b ^= ROR64(t[(a[(n + 2) % 8] >> 8) & 0xFF], 48); \
-   b ^= ROR64(t[a[(n + 1) % 8] & 0xFF], 56); \
-   b ^= c; \
-}
-
-typedef struct WhirlpoolCtx {
-	u64 h[8];		// Hash value
-	u64 x[8];		// Hash value
-	u64 k[8];		// Key
-	u64 l[8];		// Length
-	u64 state[8];	// State
-	u8 buffer[BYTES_BLOCK_SIZE];	// Buffer
-} WhirlpoolCtx;
-
-#define LOAD64BE(p) ( \
-   ((uint64_t)(((uint8_t *)(p))[0]) << 56) | \
-   ((uint64_t)(((uint8_t *)(p))[1]) << 48) | \
-   ((uint64_t)(((uint8_t *)(p))[2]) << 40) | \
-   ((uint64_t)(((uint8_t *)(p))[3]) << 32) | \
-   ((uint64_t)(((uint8_t *)(p))[4]) << 24) | \
-   ((uint64_t)(((uint8_t *)(p))[5]) << 16) | \
-   ((uint64_t)(((uint8_t *)(p))[6]) << 8) | \
-   ((uint64_t)(((uint8_t *)(p))[7]) << 0))
-
-#define STORE64BE(a, p) \
-((uint8_t *)(p))[0] = ((uint64_t)(a) >> 56) & 0xFFU, \
-((uint8_t *)(p))[1] = ((uint64_t)(a) >> 48) & 0xFFU, \
-((uint8_t *)(p))[2] = ((uint64_t)(a) >> 40) & 0xFFU, \
-((uint8_t *)(p))[3] = ((uint64_t)(a) >> 32) & 0xFFU, \
-((uint8_t *)(p))[4] = ((uint64_t)(a) >> 24) & 0xFFU, \
-((uint8_t *)(p))[5] = ((uint64_t)(a) >> 16) & 0xFFU, \
-((uint8_t *)(p))[6] = ((uint64_t)(a) >> 8) & 0xFFU, \
-((uint8_t *)(p))[7] = ((uint64_t)(a) >> 0) & 0xFFU
-
-
 #include <stdio.h>
 
 void whirlpool_process_block(WhirlpoolCtx *c) {
@@ -227,19 +176,18 @@ void whirlpool_fill_hash(u32 *hash, u64 *buff) {
 	}
 
 	// store digest in u32 array
-	for (size_t i = 0; i < 32; i++) {
+	for (size_t i = 0; i < WHIRLPOOL_DIGEST_SIZE / 2; i++) {
         hash[i] = ((u32)digest[i * 4] << 24) | 
                   ((u32)digest[i * 4 + 1] << 16) | 
                   ((u32)digest[i * 4 + 2] << 8) | 
                   ((u32)digest[i * 4 + 3]);
     }
 
-	// print hash
-	printf("Hachage Whirlpool\n");
-	for (size_t i = 0; i < 16; i++) {
-		printf("%08X", hash[i]);
-	}
-	printf("\n");
+	// printf("Hachage Whirlpool\n");
+	// for (size_t i = 0; i < 16; i++) {
+	// 	printf("%08X", hash[i]);
+	// }
+	// printf("\n");
 	free(digest);
 }
 
@@ -251,6 +199,7 @@ void whirlpool_hash(HashCtx *ctx, u8 *str, u64 len) {
 
 	block_list = build_block_list(str, len, TRUE, (BYTES_BLOCK_SIZE >> 1));
 	if (!block_list) {
+		free(c);
 		return ;
 	}
 
@@ -265,28 +214,14 @@ void whirlpool_hash(HashCtx *ctx, u8 *str, u64 len) {
 		i++;
 	}
 
-	ctx->hash = ft_calloc(sizeof(u32), 32);
-
 	whirlpool_fill_hash(ctx->hash, c->h);
+	free(c);
+	ft_lstclear(&block_list, free);
 }
 
-#define WHIRLPOOL_DIGEST_SIZE 64
 
 void whirlpool_set_context(HashCtx *ctx) {
 	ctx->hash_func = whirlpool_hash;
 	ctx->algo_name = ft_strdup("whirlpool");
-	ctx->hash_size = (WHIRLPOOL_DIGEST_SIZE >> 1); // div 2
-}
-
-int main(int argc, char **argv) {
-
-	(void)argc;
-	HashCtx *ctx = ft_calloc(1, sizeof(HashCtx));
-	u8 *str = (u8 *)argv[1];
-	u64 len = ft_strlen((char *)str);
-
-	whirlpool_hash(ctx, str, len);
-	return (0);
-
-
+	ctx->hash_size = (WHIRLPOOL_DIGEST_SIZE /2 ); // div 2
 }

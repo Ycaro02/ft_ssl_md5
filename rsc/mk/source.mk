@@ -6,16 +6,14 @@ ALL_SRC_DIR 	=	obj
 
 SRC_DIR 		=	src
 
-# MAIN_MANDATORY 	=	main.c
-MAIN_MANDATORY 	=	main_wp.c
+MAIN_MANDATORY 	=	main.c
 
 SRCS			=	prepare_block.c\
 					ssl_parse.c\
 					md5.c\
 					sha256.c\
 					hash_display.c\
-
-# SRCS_BONUS		=	main_bonus.c
+					whirlpool.c\
 
 MAKE_LIBFT		=	make -s -C libft -j
 
