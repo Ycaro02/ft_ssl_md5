@@ -91,77 +91,36 @@ static const uint64_t t[256] =
    0x2828A0285D885075, 0x5C5C6D5CDA31B886, 0xF8F8C7F8933FED6B, 0x8686228644A411C2
 };
 
-#include <stdio.h>
+void whirlpool_compute(WhirlpoolCtx *c) {
+	u64 i = 0, j = 0;
+	u64 tmp = 0;
 
-void whirlpool_process_block(WhirlpoolCtx *c) {
-	u64 i;
 
-	//Convert from big-endian byte order to host byte order
 	for(i = 0; i < 8; i++) {
-	   c->x[i] = LOAD64BE(c->buffer + i * 8);
+		c->x[i] = LOAD64BE(c->buffer + i * 8);
+		c->k[i] = c->h[i];
+		c->state[i] = c->x[i] ^ c->k[i];
 	}
- 
-	c->k[0] = c->h[0];
-	c->k[1] = c->h[1];
-	c->k[2] = c->h[2];
-	c->k[3] = c->h[3];
-	c->k[4] = c->h[4];
-	c->k[5] = c->h[5];
-	c->k[6] = c->h[6];
-	c->k[7] = c->h[7];
- 
-	c->state[0] = c->x[0] ^ c->k[0];
-	c->state[1] = c->x[1] ^ c->k[1];
-	c->state[2] = c->x[2] ^ c->k[2];
-	c->state[3] = c->x[3] ^ c->k[3];
-	c->state[4] = c->x[4] ^ c->k[4];
-	c->state[5] = c->x[5] ^ c->k[5];
-	c->state[6] = c->x[6] ^ c->k[6];
-	c->state[7] = c->x[7] ^ c->k[7];
  
 	//Iterate over all rounds
 	for(i = 0; i < 10; i++) {
-	   //Key schedule
-	   RHO(c->l[0], c->k, 0, rc[i]);
-	   RHO(c->l[1], c->k, 1, 0);
-	   RHO(c->l[2], c->k, 2, 0);
-	   RHO(c->l[3], c->k, 3, 0);
-	   RHO(c->l[4], c->k, 4, 0);
-	   RHO(c->l[5], c->k, 5, 0);
-	   RHO(c->l[6], c->k, 6, 0);
-	   RHO(c->l[7], c->k, 7, 0);
- 
-	   c->k[0] = c->l[0];
-	   c->k[1] = c->l[1];
-	   c->k[2] = c->l[2];
-	   c->k[3] = c->l[3];
-	   c->k[4] = c->l[4];
-	   c->k[5] = c->l[5];
-	   c->k[6] = c->l[6];
-	   c->k[7] = c->l[7];
- 
-	   //Apply the round function
-	   RHO(c->l[0], c->state, 0, c->k[0]);
-	   RHO(c->l[1], c->state, 1, c->k[1]);
-	   RHO(c->l[2], c->state, 2, c->k[2]);
-	   RHO(c->l[3], c->state, 3, c->k[3]);
-	   RHO(c->l[4], c->state, 4, c->k[4]);
-	   RHO(c->l[5], c->state, 5, c->k[5]);
-	   RHO(c->l[6], c->state, 6, c->k[6]);
-	   RHO(c->l[7], c->state, 7, c->k[7]);
- 
-	   c->state[0] = c->l[0];
-	   c->state[1] = c->l[1];
-	   c->state[2] = c->l[2];
-	   c->state[3] = c->l[3];
-	   c->state[4] = c->l[4];
-	   c->state[5] = c->l[5];
-	   c->state[6] = c->l[6];
-	   c->state[7] = c->l[7];
+		tmp = rc[i];
+		for(j = 0; j < 8; j++) {
+			RHO(c->l[j], c->k, j, tmp);
+			tmp = 0;
+		}
+
+		for(j = 0; j < 8; j++) {
+			c->k[j] = c->l[j];
+			RHO(c->l[j], c->state, j, c->k[j]);
+		}
+		
+		for(j = 0; j < 8; j++) {
+			c->state[j] = c->l[j];
+		}
 	}
  
-	//Update the hash value
-	for (int j = 0; j < 8; j++) {
+	for (j = 0; j < 8; j++) {
 		c->h[j] ^= c->state[j] ^ c->x[j];
 	}
 }
@@ -175,27 +134,24 @@ void whirlpool_fill_hash(u32 *hash, u64 *buff) {
 		STORE64BE(buff[i], digest + i * 8);
 	}
 
-	// store digest in u32 array
 	for (size_t i = 0; i < WHIRLPOOL_DIGEST_SIZE / 2; i++) {
-        hash[i] = ((u32)digest[i * 4] << 24) | 
-                  ((u32)digest[i * 4 + 1] << 16) | 
-                  ((u32)digest[i * 4 + 2] << 8) | 
-                  ((u32)digest[i * 4 + 3]);
-    }
-
-	// printf("Hachage Whirlpool\n");
-	// for (size_t i = 0; i < 16; i++) {
-	// 	printf("%08X", hash[i]);
-	// }
-	// printf("\n");
+		hash[i] = ((u32)digest[i * 4] << 24) | 
+				  ((u32)digest[i * 4 + 1] << 16) | 
+				  ((u32)digest[i * 4 + 2] << 8) | 
+				  ((u32)digest[i * 4 + 3]);
+	}
 	free(digest);
 }
 
 void whirlpool_hash(HashCtx *ctx, u8 *str, u64 len) {
-	t_list		*block_list = NULL, *current = NULL;
-	WhirlpoolCtx *c = ft_calloc(1, sizeof(WhirlpoolCtx));
+	t_list			*block_list = NULL, *current = NULL;
+	WhirlpoolCtx	*c = ft_calloc(1, sizeof(WhirlpoolCtx));
+	int				i = 0, lst_size = 0;
 
-	(void)ctx;
+	if (!c) {
+		ft_printf_fd(2, "Error: whirlpool_hash: ft_calloc failed\n");
+		return ;
+	}
 
 	block_list = build_block_list(str, len, TRUE, (BYTES_BLOCK_SIZE >> 1));
 	if (!block_list) {
@@ -203,13 +159,13 @@ void whirlpool_hash(HashCtx *ctx, u8 *str, u64 len) {
 		return ;
 	}
 
-	int i = 0, lst_size = ft_lstsize(block_list);
+	lst_size = ft_lstsize(block_list);
 
 	current = block_list;
 
 	while (i < lst_size) {
 		ft_memcpy(c->buffer, current->content, BYTES_BLOCK_SIZE);
-		whirlpool_process_block(c);
+		whirlpool_compute(c);
 		current = current->next;
 		i++;
 	}

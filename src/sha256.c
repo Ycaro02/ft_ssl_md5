@@ -2,7 +2,7 @@
 #include "../include/sha256.h"
 #include "../include/handle_endian.h"
 
-void sha256_compute(u32 state[8], u8 *block_data) {
+void SHA256_compute(u32 state[8], u8 *block_data) {
     static u32 K[64] = SHA256_K;
 	
 	u32 		w[64] = {0};				/* Message schedule (word) */
@@ -67,7 +67,7 @@ void SHA256_hash(HashCtx *ctx, u8 *str, u64 len) {
 	list_size = ft_lstsize(block_list);
 	current = block_list;
 	while (i < list_size) {
-		sha256_compute(state, current->content);
+		SHA256_compute(state, current->content);
 		i++;
 		current = current->next;
 	}

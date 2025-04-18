@@ -66,6 +66,9 @@ clean_lib:
 test: $(NAME)
 	@./rsc/subject_test.sh
 
+test_bonus: $(NAME)
+	@./rsc/subject_test.sh bonus
+
 # @ulimit -c unlimited
 leak thread debug: clean $(NAME)
 	@printf	"$(CYAN)CFLAGS: $(CFLAGS)$(RESET)\n"
