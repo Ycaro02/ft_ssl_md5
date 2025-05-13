@@ -6,9 +6,8 @@ ALL_SRC_DIR 	=	obj
 
 SRC_DIR 		=	src
 
-MAIN_MANDATORY 	=	main.c
-
-SRCS			=	prepare_block.c\
+SRCS			=	main.c\
+					prepare_block.c\
 					ssl_parse.c\
 					md5.c\
 					sha256.c\
@@ -26,13 +25,6 @@ LIST			= 	libft/list/linked_list.a
 OBJS 			= $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 
 RM			=	rm -rf
-
-ifeq ($(findstring bonus, $(MAKECMDGOALS)), bonus)
-ASCII_NAME	= "bonus"
-SRCS += $(SRCS_BONUS)
-else
-SRCS += $(MAIN_MANDATORY)
-endif
 
 ifeq ($(findstring leak, $(MAKECMDGOALS)), leak)
 CFLAGS = -Wall -Wextra -Werror -g3 -fsanitize=address
