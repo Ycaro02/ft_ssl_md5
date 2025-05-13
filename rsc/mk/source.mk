@@ -13,8 +13,7 @@ SRCS			=	prepare_block.c\
 					md5.c\
 					sha256.c\
 					hash_display.c\
-
-# SRCS_BONUS		=	main_bonus.c
+					whirlpool.c\
 
 MAKE_LIBFT		=	make -s -C libft -j
 

@@ -7,11 +7,11 @@
 
 #define SSL_USAGE_STRING "usage: ft_ssl command [flags] [file/string]\n"
 
-#define SSL_ERROR_STRING "./ft_ssl %s\n\
-ft_ssl: Error: '%s' is an invalid command.\n\n\
+#define SSL_HELP_STRING "Valid commands:\n\n\
 Commands:\n\
 md5\n\
-sha256\n\n\
+sha256\n\
+whirlpool\n\n\
 Flags:\n\
 -p -q -r -s\n"\
 
@@ -75,14 +75,14 @@ typedef struct s_implemented_algo {
  * @param shift number of bits to shift
  * @return rotated value
 */
-#define ROTATE_LEFT(val, shift) (((val) << (shift)) | ((val) >> (32 - shift)))
+#define ROTATE_LEFT_32(val, shift) (((val) << (shift)) | ((val) >> (32 - shift)))
 
 /* ssl_parse */
 s32		ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx);
 s32		handle_hash_algo(int argc, char **argv, HashCtx *ctx);
 
 /* Prepare block */
-t_list	*build_block_list(u8 *padded, u64 len, s8 reverse_len_endian);
+t_list	*build_block_list(u8 *padded, u64 len, s8 reverse_len_endian, u64 last_block_size);
 void	block_to_u32(u8 *block, u32 *output);
 void	*get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find);
 

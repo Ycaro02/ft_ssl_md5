@@ -1,30 +1,7 @@
 #include "../include/ft_ssl.h"
 #include "../include/md5.h"
 #include "../include/sha256.h"
-
-/**
- * @brief Get option value from flag context
- * @param opt_lst option list
- * @param flag flag value
- * @param to_find flag to find
- * @return allocated copy option value or NULL if not found
- */
-// void *get_opt_value(t_list *opt_lst, uint32_t flag, uint32_t to_find)
-// {
-// 	t_opt_node	*opt = NULL;
-// 	void		*ret = NULL;
-
-// 	if (has_flag(flag, to_find)) {
-// 		opt = search_exist_opt(opt_lst, is_same_flag_val_opt, (void *)&to_find);
-// 		if (opt && opt->value_type == DECIMAL_VALUE) {
-// 			ret = malloc(sizeof(u32));
-// 			*(u32 *)ret = opt->val.digit;
-// 		} else if (opt && (opt->value_type == HEXA_VALUE || opt->value_type == CHAR_VALUE)) {
-// 			ret = ft_strdup(opt->val.str);
-// 		}
-// 	}
-// 	return (ret);
-// }
+#include "../include/whirlpool.h"
 
 /**
  * @brief Add different flag accepted by ssl
@@ -55,10 +32,8 @@ s32 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
 	/* -1 +1 cause we skip first args (algo_mod) */
 	flag = parse_flag(argc - 1, argv + 1, flag_ctx, &error);
 	if (error == -1) {
-		// ft_printf_fd(1, "Parse_flag error: %d\n", error);
 		return (-1);
 	}
-	// display_option_list(*flag_ctx);
 	return (flag);
 }
 
@@ -68,7 +43,6 @@ s32 ssl_handle_flag(int argc, char **argv, t_flag_context *flag_ctx) {
 */
 void free_implemented_algo(void *content) {
 	ImplementedAlgo *algo = (ImplementedAlgo *)content;
-
 	free(algo->name);
 	free(algo);
 }
@@ -119,6 +93,7 @@ void implemented_algo_add(t_list **algo_list, ImplementedAlgo *algo) {
 void build_implemented_algo_list(t_list **algo_list) {
 	implemented_algo_add(algo_list, implementent_algo_create("md5", MD5_set_context));
 	implemented_algo_add(algo_list, implementent_algo_create("sha256", SHA256_set_context));
+	implemented_algo_add(algo_list, implementent_algo_create("whirlpool", whirlpool_set_context));
 }
 
 /**
@@ -148,7 +123,7 @@ s32 handle_hash_algo(int argc, char **argv, HashCtx *ctx) {
 		}
 	}
 	if (ctx->algo_name == NULL) {
-		ft_printf_fd(1, SSL_ERROR_STRING, argv[1], argv[1]);
+		ft_printf_fd(1, SSL_HELP_STRING);
 		ret = FALSE;
 	} else if (!(ctx->hash = ft_calloc(sizeof(u32), ctx->hash_size))) {
 		ret = FALSE;

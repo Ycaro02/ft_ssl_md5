@@ -2,7 +2,7 @@ include libft/rsc/mk/color.mk
 include rsc/mk/source.mk
 
 NAME			=	ft_ssl
-CC				=	clang
+CC				=	clang -g3
 
 
 # ASCII_ART		=	./rsc/sh/vox_ascii.sh
@@ -65,6 +65,9 @@ clean_lib:
 
 test: $(NAME)
 	@./rsc/subject_test.sh
+
+test_bonus: $(NAME)
+	@./rsc/subject_test.sh bonus
 
 # @ulimit -c unlimited
 leak thread debug: clean $(NAME)
