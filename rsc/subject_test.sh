@@ -23,8 +23,7 @@ function check_output {
 	fi
 }
 
-function mandatory_test {
-
+function md5_test {
 	# MD5 subjects tests
 	display_color_msg ${YELLOW} "MD5 Subjects tests"
 
@@ -58,6 +57,10 @@ function mandatory_test {
 	display_color_msg ${MAGENTA} "All MD5 subjects tests passed."
 	rm -f expected output file
 
+}
+
+function sha256_test {
+
 	# SHA256 subjects tests
 	display_color_msg ${YELLOW} "SHA256 Subjects tests"
 	# test 13
@@ -67,6 +70,16 @@ function mandatory_test {
 	check_output "SHA256 (\"42 is nice\") = b7e44c7a40c5f80139f0a50f3650fb2bd8d00b0d24667c4c2ca32c88e13b758f" "$(${SSL_BIN} sha256 -s "42 is nice")"
 	display_color_msg ${MAGENTA} "All SHA256 subjects tests passed."
 
+
+}
+
+function mandatory_test {
+
+	make -j -s
+
+	md5_test
+	sha256_test
+	
 	# Test with ft_ssl binary (advanced tests)
 	display_color_msg ${YELLOW} "Test with ft_ssl binary"
 
