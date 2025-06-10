@@ -6,7 +6,7 @@
 #    By: nfour <nfour@student.42angouleme.fr>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/04/11 16:07:03 by nfour             #+#    #+#              #
-#    Updated: 2024/07/08 11:15:00 by nfour            ###   ########.fr        #
+#    Updated: 2025/06/02 11:37:15 by nfour            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ CREATE_LIB	= ar rcs
 NAME		= libft.a
 # CC			= gcc
 CC			= clang
-CFLAGS		= -Wall -Wextra -Werror -g3
+CFLAGS		= -Wall -Wextra -Werror -g3 -gdwarf-4
 # CFLAGS		= -Wall -Wextra -Werror -g3 -fsanitize=address
 
 all : $(NAME)

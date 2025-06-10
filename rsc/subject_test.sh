@@ -23,6 +23,24 @@ function check_output {
 	fi
 }
 
+function openssl_test {
+    local input="${1}"
+    local algo="${2}"
+    
+    local file="${3}"
+
+    if [[ -z "${file}" ]]; then
+        local openssl_out=$(echo -n "${input}" | openssl ${algo} | awk -F '= ' '{print $2}')
+        local ft_ssl_out=$(echo -n "${input}" | ${SSL_BIN} ${algo} | awk -F '= ' '{print $2}') 
+    else
+        local openssl_out=$(openssl ${algo} "${file}" | awk -F '= ' '{print $2}')
+        local ft_ssl_out=$(${SSL_BIN} ${algo} "${file}" | awk -F '= ' '{print $2}')
+    fi
+
+    check_output "${openssl_out}" "${ft_ssl_out}"
+
+}
+
 function md5_test {
 	# MD5 subjects tests
 	display_color_msg ${YELLOW} "MD5 Subjects tests"
@@ -55,43 +73,80 @@ function md5_test {
 	check_output "just to be extra clear\n3ba35f1ea0d170cb3b9a752e3360286c\nacbd18db4cc2f85cedef654fccc4a4d8\n53d53ea94217b259c11a5a2d104ec58a" "$(echo "just to be extra clear" | ${SSL_BIN} md5 -r -q -p -s "foo" file)"
 
 	display_color_msg ${MAGENTA} "All MD5 subjects tests passed."
-	rm -f expected output file
+
+	# Test 13
+    openssl_test "\n" md5
+	# Test 14
+    openssl_test "42 is nice" md5
+	# Test 15
+    openssl_test "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" md5
+	# Test 16
+    openssl_test "aa" md5
+	# Test 17
+    openssl_test "" md5
+
+    # Test 18
+    openssl_test "" md5 "Makefile"
+    # Test 19
+    openssl_test "" md5 "ft_ssl"
+    # Test 20
+    touch a && openssl_test "" md5 a && rm -f a
+    # Test 21
+    if [ -f "42fr_out" ]; then
+        openssl_test "" md5 42fr_out
+    fi
+
 
 }
 
 function sha256_test {
 
+    TEST_ID=0
+
 	# SHA256 subjects tests
 	display_color_msg ${YELLOW} "SHA256 Subjects tests"
-	# test 13
+	# Test 1
 	echo "https://www.42.fr/" > website
 	check_output "1ceb55d2845d9dd98557b50488db12bbf51aaca5aa9c1199eb795607a2457daf" "$(${SSL_BIN} sha256 -q website)"
-	# test 14
+	# Test 2
 	check_output "SHA256 (\"42 is nice\") = b7e44c7a40c5f80139f0a50f3650fb2bd8d00b0d24667c4c2ca32c88e13b758f" "$(${SSL_BIN} sha256 -s "42 is nice")"
 	display_color_msg ${MAGENTA} "All SHA256 subjects tests passed."
 
 
+	# Test 3
+    openssl_test "\n" sha256
+	# Test 4
+    openssl_test "42 is nice" sha256
+	# Test 5
+    openssl_test "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" sha256
+	# Test 6
+    openssl_test "aa" sha256
+	# Test 7
+    openssl_test "" sha256
+    # Test 8
+    openssl_test "" sha256 "Makefile"
+    # Test 9
+    openssl_test "" sha256 "ft_ssl"
+    # Test 10
+    touch a && openssl_test "" sha256 a && rm -f a
+    # Test 11
+    if [ -f "42fr_out" ]; then
+        openssl_test "" sha256 42fr_out
+    fi
 }
 
 function mandatory_test {
 
 	make -j -s
 
+    wget https://www.42.fr/ -O 42fr_out > /dev/null 2>&1
+
+
 	md5_test
 	sha256_test
 	
-	# Test with ft_ssl binary (advanced tests)
-	display_color_msg ${YELLOW} "Test with ft_ssl binary"
-
-	# test 15 
-	echo -ne "${YELLOW}MD5: "
-	check_output "$(md5sum ft_ssl | awk '{print $1}')" "$(${SSL_BIN} md5 ft_ssl -q)"
-	# test 16
-	echo -ne "${YELLOW}SHA256: "
-	check_output "$(sha256sum ft_ssl | awk '{print $1}')" "$(${SSL_BIN} sha256 ft_ssl -q)"
-
-	display_color_msg ${MAGENTA} "All mandatory tests passed."
-	rm -f expected output website
+	display_color_msg ${MAGENTA} "All tests passed."
+	rm -f expected output website file 42fr_out
 }
 
 
