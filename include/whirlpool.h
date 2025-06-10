@@ -34,8 +34,7 @@ typedef struct WhirlpoolCtx {
    b ^= c; \
 }
 
-#define WHIRLPOOL_DIGEST_SIZE 32
-
+/* Load a 64 bits variable in bytes array (in big endian) */
 #define LOAD64BE(p) ( \
    ((uint64_t)(((uint8_t *)(p))[0]) << 56) | \
    ((uint64_t)(((uint8_t *)(p))[1]) << 48) | \
@@ -46,6 +45,8 @@ typedef struct WhirlpoolCtx {
    ((uint64_t)(((uint8_t *)(p))[6]) << 8) | \
    ((uint64_t)(((uint8_t *)(p))[7]) << 0))
 
+
+/* Store a 64 bits variable from bytes array (in big endian) */
 #define STORE64BE(a, p) \
 ((uint8_t *)(p))[0] = ((uint64_t)(a) >> 56) & 0xFFU, \
 ((uint8_t *)(p))[1] = ((uint64_t)(a) >> 48) & 0xFFU, \
@@ -56,7 +57,10 @@ typedef struct WhirlpoolCtx {
 ((uint8_t *)(p))[6] = ((uint64_t)(a) >> 8) & 0xFFU, \
 ((uint8_t *)(p))[7] = ((uint64_t)(a) >> 0) & 0xFFU
 
+
+#define WHIRLPOOL_DIGEST_SIZE 32
+
+/* whirlpool.c */
 void whirlpool_set_context(HashCtx *ctx);
-void whirlpool_hash(HashCtx *ctx, u8 *str, u64 len);
 
 #endif /* WHIRLPOOL_H */

@@ -46,7 +46,7 @@ struct s_hash_context {
 	char			*stdin_str;							/* STDIN string */
 	u64				 stdin_strlen;						/* STDIN string length */
 	t_list			*input_file;						/* Input file */
-	void 			(*hash_func)(HashCtx*, u8*, u64);	/* Function to hash string */
+	void 			(*hash_func)(HashCtx*, u8*, u64);	/* Hash Function */
 	char			*algo_name;							/* Algorithm name for output message */
 	u32				*hash;								/* Hash (digest) */	
 	u32				hash_size;							/* Hash size */

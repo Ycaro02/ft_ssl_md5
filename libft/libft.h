@@ -6,7 +6,7 @@
 /*   By: nfour <nfour@student.42angouleme.fr>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/11 15:43:41 by nfour             #+#    #+#             */
-/*   Updated: 2024/08/26 18:12:40 by nfour            ###   ########.fr       */
+/*   Updated: 2025/06/10 10:54:21 by nfour            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,9 +209,6 @@ uint32_t max_uint32(uint32_t a, uint32_t b);
 */
 uint32_t min_uint32(uint32_t a, uint32_t b);
 
-
-/* Use ft_memcpy in mat4 */
-#include "math/ft_math.h"
 
 /* Use some libft function */
 #include "stack_string/stack_string.h"
